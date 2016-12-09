@@ -2,7 +2,6 @@
 package groteopdracht.datastructures;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import groteopdracht.Constants;
 
@@ -14,11 +13,6 @@ public class DagSchema {
 
 	private ArrayList<Route> v1, v2;
 	private int t1, t2;
-	/**
-	 * bijhouden welke orders we hebben, 0 staat hier ook in, voor makkelijk
-	 * indexeren, maar is niet relevant.
-	 */
-	private BitSet isCollected = new BitSet(Constants.ORDERS_IDS);
 
 	public DagSchema() {
 		v1 = new ArrayList<>();
@@ -28,7 +22,6 @@ public class DagSchema {
 
 	public InsertIndex bestInsertIndex(int order) {
 		InsertIndex bestIndex = new InsertIndex();
-		if (isCollected.get(order)) return bestIndex;
 		Order cur = Order.orders[order];
 		for (int i = 0; i < 2; i++) {
 			ArrayList<Route> array = i == 0 ? v1 : v2;
@@ -62,6 +55,7 @@ public class DagSchema {
 			Route r = new Route();
 			r.add(0, order);
 			(index.vNr == 0 ? v1 : v2).add(r);
+			
 		} else {
 			(index.vNr == 0 ? v1 : v2).get(index.routeNr).add(index.routeIndex,
 					order);

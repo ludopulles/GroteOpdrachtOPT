@@ -17,11 +17,17 @@ public class Order {
 			t_orders[0] = new Order();
 			for (int i = 1; (line = orderReader.readLine()) != null; i++) {
 				String[] parts = line.split(";");
+				
+				int leegTijd = (int) Math.round(Double.parseDouble(parts[5]) * Constants.MINUTE_CONVERSION);
+//				if (Math.floor(leegTijdD) != leegTijdD) {
+//					System.err.println("Strange time: " + parts[5] + " : " + leegTijdD + " VS " + Math.floor(leegTijdD));
+//				}
+				
 				int orderID = Integer.parseInt(parts[0]);
 				int numContainers = Integer.parseInt(parts[3]);
 				int volume = Integer.parseInt(parts[4]);
-				int leegTijd = (int) (Double.parseDouble(parts[5])
-						* Constants.MINUTE_CONVERSION);
+//				int leegTijd = (int) (Double.parseDouble(parts[5])
+//						* Constants.MINUTE_CONVERSION);
 				int matrixID = Integer.parseInt(parts[6]);
 				t_orders[i] = new Order(orderID, parts[2], numContainers,
 						volume, leegTijd, matrixID);

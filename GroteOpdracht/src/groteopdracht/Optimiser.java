@@ -22,8 +22,7 @@ public class Optimiser {
 			byPenalty[i] = i + 1;
 		}
 		Arrays.sort(byPenalty, orderComparator);
-		for (int nr = 0; nr < byPenalty.length; nr++) {
-			int i = byPenalty[nr];
+		for (int i : byPenalty) {
 			int freq = Order.orders[i].frequency;
 			// try to fit o in the solution
 			InsertIndex[] indices = new InsertIndex[5];
@@ -43,6 +42,7 @@ public class Optimiser {
 					}
 				}
 				if (numCan > 0) {
+					this.solution.insertOrder(i);
 					this.solution.insert(bestIndex, indices[bestIndex], i);
 				}
 			} else if (freq == 2) {
@@ -59,6 +59,7 @@ public class Optimiser {
 						// !can1 => can2
 						pickFirst = can1;
 					}
+					this.solution.insertOrder(i);
 					if (pickFirst) {
 						this.solution.insert(0, indices[0], i);
 						this.solution.insert(3, indices[3], i);
@@ -69,6 +70,7 @@ public class Optimiser {
 				}
 			} else if (freq == 3) {
 				if (indices[0].canAdd && indices[2].canAdd && indices[4].canAdd) {
+					this.solution.insertOrder(i);
 					this.solution.insert(0, indices[0], i);
 					this.solution.insert(2, indices[2], i);
 					this.solution.insert(4, indices[4], i);
@@ -85,6 +87,7 @@ public class Optimiser {
 					}
 				}
 				if (numCan >= 4) {
+					this.solution.insertOrder(i);
 					for (int j = 0; j < 5; j++) {
 						if (j == worstIndex) continue;
 						this.solution.insert(j, indices[j], i);
@@ -94,7 +97,15 @@ public class Optimiser {
 		}
 	}
 
+	public void optimiseOrders() {
+		// check if we can swap orders, to other places, so that the time is reduced!
+	}
+	
 	public void printSolution(BufferedWriter output) throws IOException {
 		this.solution.printSolution(output);
+		Main.infoMsg("Used orders: " + this.solution.getUsedOrders());
+		Main.infoMsg("Penalty: " + this.solution.getPenalty());
+		Main.infoMsg("Travel time: " + this.solution.getTravelTime());
+		Main.infoMsg("Score: " + this.solution.getScore());
 	}
 }

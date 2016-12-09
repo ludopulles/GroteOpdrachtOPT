@@ -9,6 +9,10 @@ import groteopdracht.datastructures.Order;
 
 public class Main {
 
+	public static void infoMsg(String s) {
+		System.out.println("INFO: " + s);
+	}
+	
 	public static void main(String[] args) throws IOException {
 		Optimiser optimiser = new Optimiser();
 		optimiser.addGreedily(new Comparator<Integer>() {
@@ -18,6 +22,8 @@ public class Main {
 				return Order.orders[o2].penalty - Order.orders[o1].penalty;
 			}
 		});
+		
+		optimiser.optimiseOrders();
 
 		try (BufferedWriter output = new BufferedWriter(new FileWriter("solution.txt"))) {
 			optimiser.printSolution(output);
