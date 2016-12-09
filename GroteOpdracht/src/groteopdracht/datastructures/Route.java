@@ -25,7 +25,7 @@ public class Route {
 	}
 	
 	public boolean canAdd(int order) {
-		return this.capLeft >= Order.orders[order].capacity();
+		return this.capLeft >= Order.orders[order].capacity;
 	}
 
 	public void add(int index, int order) {
@@ -35,7 +35,7 @@ public class Route {
 		int prev = li.hasPrevious() ? li.previous() : 0;
 		int next = index == route.size() ? 0 : route.get(index);
 		
-		this.capLeft -= Order.orders[order].capacity();
+		this.capLeft -= Order.orders[order].capacity;
 		this.time += Order.orders[order].timeIncrease(prev, next);
 		this.route.add(index, order);
 	}

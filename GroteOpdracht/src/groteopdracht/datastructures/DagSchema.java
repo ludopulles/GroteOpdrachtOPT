@@ -87,7 +87,7 @@ public class DagSchema {
 				for (int orderNR : r.route) {
 					int nxtI = Order.orders[orderNR].matrixID;
 					calcTime += Afstanden.tijd[curI][nxtI];
-					calcTime += Order.orders[orderNR].leegTijd;
+					calcTime += Order.orders[orderNR].emptyTime;
 					curI = nxtI;
 				}
 				calcTime += Afstanden.tijd[curI][Constants.DUMP_LOCATION];

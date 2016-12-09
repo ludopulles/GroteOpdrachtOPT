@@ -32,8 +32,8 @@ public class Order {
 		}
 		orders = t_orders;
 	}
-	public final int orderID, frequentie, numContainers, volume, leegTijd,
-			matrixID;
+	public final int orderID, frequency, numContainers, volume, emptyTime;
+	public final int matrixID, penalty, capacity;
 
 	/*
 	 * Leeg order, oftewel dumpen bij de dumpplaats. Dit kost 30 minuten
@@ -42,22 +42,16 @@ public class Order {
 		this(0, "0", 0, 0, Constants.DROP_TIME, Constants.DUMP_LOCATION);
 	}
 
-	public Order(int orderID, String frequentie, int numContainers, int volume,
-			int leegTijd, int matrixID) {
+	public Order(int orderID, String frequency, int numContainers, int volume,
+			int emptyTime, int matrixID) {
 		this.orderID = orderID;
-		this.frequentie = frequentie.charAt(0) - '0';
+		this.frequency = frequency.charAt(0) - '0';
 		this.numContainers = numContainers;
 		this.volume = volume;
-		this.leegTijd = leegTijd;
+		this.emptyTime = emptyTime;
 		this.matrixID = matrixID;
-	}
-
-	public int penalty() {
-		return this.leegTijd * this.frequentie;
-	}
-
-	public int capacity() {
-		return this.volume * this.numContainers;
+		this.penalty = 3 * this.emptyTime * this.frequency;
+		this.capacity = this.volume * this.numContainers;
 	}
 
 	/**
@@ -76,6 +70,6 @@ public class Order {
 		int l = orders[prev].matrixID, m = this.matrixID,
 				r = orders[next].matrixID;
 		return Afstanden.tijd[l][m] + Afstanden.tijd[m][r]
-				- Afstanden.tijd[l][r] + this.leegTijd;
+				- Afstanden.tijd[l][r] + this.emptyTime;
 	}
 }

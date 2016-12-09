@@ -24,7 +24,7 @@ public class WeekSchema {
 		weekschema[4] = fr;
 	}
 
-	public void printSolutionFormat(BufferedWriter w) throws IOException {
+	public void printSolution(BufferedWriter w) throws IOException {
 		for (int i = 0; i < weekschema.length; i++) {
 			int dag = i + 1;
 			weekschema[i].debugTime("Dag " + i);
