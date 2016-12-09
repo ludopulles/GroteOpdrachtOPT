@@ -1,10 +1,10 @@
+
 package groteopdracht.datastructures;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-
-import groteopdracht.Main;
+import groteopdracht.Constants;
 
 /*
  * Aannames: we splitsen een order niet, dus als we het ophalen, halen we gelijk alles op.
@@ -12,62 +12,44 @@ import groteopdracht.Main;
  */
 public class DagSchema {
 
-	public final static int MAX_TIME = Main.MINUTE_CONVERSION * 12 * 60 - 1;
-	public final static int MAX_CAPACITY = 20000 * 5;
-
 	private ArrayList<Route> v1, v2;
-//	private int t1, t2;
-	
-	/** 
-	 * bijhouden welke orders we hebben,
-	 * 0 staat hier ook in, voor makkelijk indexeren, maar is niet relevant.
+	private int t1, t2;
+	/**
+	 * bijhouden welke orders we hebben, 0 staat hier ook in, voor makkelijk
+	 * indexeren, maar is niet relevant.
 	 */
-	private BitSet isCollected = new BitSet(Order.ORDERS_IDS);
-	
+	private BitSet isCollected = new BitSet(Constants.ORDERS_IDS);
+
 	public DagSchema() {
 		v1 = new ArrayList<>();
 		v2 = new ArrayList<>();
+		t1 = t2 = Constants.MAX_TIME;
 	}
 
 	public InsertIndex bestInsertIndex(int order) {
-		if (isCollected.get(order)) return new InsertIndex();
-
 		InsertIndex bestIndex = new InsertIndex();
-		int mID = Order.orders[order].matrixID;
-		int dumpTime = Order.orders[order].leegTijd;
-		
+		if (isCollected.get(order)) return bestIndex;
+		Order cur = Order.orders[order];
 		for (int i = 0; i < 2; i++) {
-			ArrayList<Route> arr = i == 0 ? v1 : v2;
-			int tTime = 0;
-			for (int j = 0; j < arr.size(); j++) {
-				tTime += arr.get(j).time;
-			}
-			for (int j = 0; j < arr.size(); j++) {
-				Route r = arr.get(j);
+			ArrayList<Route> array = i == 0 ? v1 : v2;
+			int timeLeft = i == 0 ? t1 : t2;
+			for (int j = 0; j < array.size(); j++) {
+				Route r = array.get(j);
 				if (!r.canAdd(order)) continue;
 				for (int k = 0, rl = r.length(); k <= rl; k++) {
-					int lneighbour = Order.orders[k == 0 ? 0 : r.get(k - 1)].matrixID;
-					int rneighbour = Order.orders[k == rl ? 0 : r.get(k)].matrixID;
-					// lneighbour -> k -> rneighbour
-					int timeL = Afstanden.tijd[lneighbour][mID];
-					int timeR = Afstanden.tijd[mID][rneighbour];
-					int timeOld = Afstanden.tijd[lneighbour][rneighbour];
-					int deltaTime = timeL + timeR - timeOld + dumpTime;
-					if (tTime + deltaTime <= DagSchema.MAX_TIME) {
-						// dan mag het.
-						InsertIndex insert = new InsertIndex(i, j, k, deltaTime);
-						if (bestIndex.compareTo(insert) > 0) bestIndex = insert;
-					}
+					int prev = k == 0 ? 0 : r.get(k - 1);
+					int next = k == rl ? 0 : r.get(k);
+					int increase = cur.timeIncrease(prev, next);
+					InsertIndex insert = new InsertIndex(i, j, k, increase);
+					if (increase <= timeLeft && bestIndex.compareTo(insert) > 0)
+						bestIndex = insert;
 				}
 			}
-			
-			// nieuwe route:
-			int newRouteTime = Order.DROP_TIME + Afstanden.tijd[Order.orders[0].matrixID][mID] + Afstanden.tijd[mID][Order.orders[0].matrixID] + dumpTime;
-			InsertIndex insert = new InsertIndex(i, newRouteTime);
-			// System.out.println(bestIndex.timeInc + " VS " + insert.timeInc + " GIVES " + bestIndex.compareTo(insert));
-			if (tTime + newRouteTime <= DagSchema.MAX_TIME && bestIndex.compareTo(insert) > 0) {
+			// new route:
+			int increase = Constants.DROP_TIME + cur.timeIncrease(0, 0);
+			InsertIndex insert = new InsertIndex(i, increase);
+			if (increase <= timeLeft && bestIndex.compareTo(insert) > 0)
 				bestIndex = insert;
-			}
 		}
 		return bestIndex;
 	}
@@ -81,8 +63,11 @@ public class DagSchema {
 			r.add(0, order);
 			(index.vNr == 0 ? v1 : v2).add(r);
 		} else {
-			(index.vNr == 0 ? v1 : v2).get(index.routeNr).add(index.routeIndex, order);
+			(index.vNr == 0 ? v1 : v2).get(index.routeNr).add(index.routeIndex,
+					order);
 		}
+		if (index.vNr == 0) t1 -= index.timeInc;
+		else t2 -= index.timeInc;
 	}
 
 	public List<Integer> exportRoute(int j) {
@@ -95,22 +80,20 @@ public class DagSchema {
 	}
 
 	public void debugTime(String extraInfo) {
-		for (Route r : v1) {
-			int calcTime = Order.DROP_TIME;
-			int curI = Order.orders[0].matrixID;
-			for (int orderNR : r.route) {
-				int nxtI = Order.orders[orderNR].matrixID;
-				calcTime += Afstanden.tijd[curI][nxtI];
-				calcTime += Order.orders[orderNR].leegTijd;
-				
-				System.out.println(curI + " -> " + nxtI + ": " + Afstanden.tijd[curI][nxtI]);
-				System.out.println("EMPTYING " + orderNR + " IN " + Order.orders[orderNR].leegTijd);
-				
-				curI = nxtI;
+		for (int v = 0; v < 2; v++) {
+			for (Route r : (v == 0 ? v1 : v2)) {
+				int calcTime = Constants.DROP_TIME;
+				int curI = Constants.DUMP_LOCATION;
+				for (int orderNR : r.route) {
+					int nxtI = Order.orders[orderNR].matrixID;
+					calcTime += Afstanden.tijd[curI][nxtI];
+					calcTime += Order.orders[orderNR].leegTijd;
+					curI = nxtI;
+				}
+				calcTime += Afstanden.tijd[curI][Constants.DUMP_LOCATION];
+				System.out.println(extraInfo + " v = " + v + ", t = " + r.time
+						+ ", vs t = " + calcTime);
 			}
-			calcTime += Afstanden.tijd[curI][Order.orders[0].matrixID];
-			System.out.println(curI + " -> " + 0 + ": " + Afstanden.tijd[curI][Order.orders[0].matrixID]);
-			System.out.println(extraInfo + " TIME: " + r.time + " VS " + calcTime);
 		}
 	}
 }

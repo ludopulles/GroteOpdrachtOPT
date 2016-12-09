@@ -6,26 +6,23 @@ public class InsertIndex implements Comparable<InsertIndex> {
 	public final int vNr, routeNr, routeIndex, timeInc;
 	
 	public InsertIndex() {
-		this.canAdd = false;
-		this.newRoute = false;
-		this.vNr = this.routeNr = this.routeIndex = 0;
-		this.timeInc = Integer.MAX_VALUE;
+		this(false, false, 0, 0, 0, Integer.MAX_VALUE);
 	}
 	
 	public InsertIndex(int vNr, int routeNr, int routeIndex, int timeInc) {
-		this.canAdd = true;
-		this.newRoute = false;
-		this.vNr = vNr;
-		this.routeNr = routeNr;
-		this.routeIndex = routeIndex;
-		this.timeInc = timeInc;
+		this(true, false, vNr, routeNr, routeIndex, timeInc);
 	}
 
 	public InsertIndex(int vNr, int timeInc) {
-		this.canAdd = true;
-		this.newRoute = true;
+		this(true, true, vNr, 0, 0, timeInc);
+	}
+	
+	public InsertIndex(boolean canAdd, boolean newRoute, int vNr, int routeNr, int routeIndex, int timeInc) {
+		this.canAdd = canAdd;
+		this.newRoute = newRoute;
 		this.vNr = vNr;
-		this.routeNr = this.routeIndex = 0;
+		this.routeNr = routeNr;
+		this.routeIndex = routeIndex;
 		this.timeInc = timeInc;
 	}
 

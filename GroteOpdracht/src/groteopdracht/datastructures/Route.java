@@ -3,6 +3,7 @@ package groteopdracht.datastructures;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import groteopdracht.Constants;
 
 public class Route {
 
@@ -11,8 +12,8 @@ public class Route {
 
 	public Route() {
 		this.route = new ArrayList<>();
-		this.capLeft = DagSchema.MAX_CAPACITY;
-		this.time = Order.DROP_TIME;
+		this.capLeft = Constants.MAX_CAPACITY;
+		this.time = Constants.DROP_TIME;
 	}
 
 	public int length() {
@@ -28,17 +29,14 @@ public class Route {
 	}
 
 	public void add(int index, int order) {
-		// assert(canAdd(order));
-		this.capLeft -= Order.orders[order].capacity();
-		
-		int cur = Order.orders[order].matrixID;
+		// Assert: canAdd(order)
+
 		ListIterator<Integer> li = route.listIterator(index);
-		int prev = Order.orders[li.hasPrevious() ? li.previous() : 0].matrixID;
-		int next = Order.orders[index == route.size() ? 0 : route.get(index)].matrixID;
-		route.add(index, order);
-		this.time += Afstanden.tijd[prev][cur];
-		this.time += Afstanden.tijd[cur][next];
-		this.time -= Afstanden.tijd[prev][next];
-		this.time += Order.orders[order].leegTijd;
+		int prev = li.hasPrevious() ? li.previous() : 0;
+		int next = index == route.size() ? 0 : route.get(index);
+		
+		this.capLeft -= Order.orders[order].capacity();
+		this.time += Order.orders[order].timeIncrease(prev, next);
+		this.route.add(index, order);
 	}
 }
