@@ -27,10 +27,13 @@ public class Route {
 	public boolean canAdd(int order) {
 		return this.capLeft >= Order.orders[order].capacity;
 	}
+	
+	public void append(int order) {
+		this.add(this.route.size(), order);
+	}
 
 	public void add(int index, int order) {
 		// Assert: canAdd(order)
-
 		ListIterator<Integer> li = route.listIterator(index);
 		int prev = li.hasPrevious() ? li.previous() : 0;
 		int next = index == route.size() ? 0 : route.get(index);
@@ -38,5 +41,9 @@ public class Route {
 		this.capLeft -= Order.orders[order].capacity;
 		this.time += Order.orders[order].timeIncrease(prev, next);
 		this.route.add(index, order);
+	}
+
+	public void twoOpt() {
+		// TODO: magics
 	}
 }

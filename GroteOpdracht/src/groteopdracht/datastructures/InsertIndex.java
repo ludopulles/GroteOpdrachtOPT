@@ -17,7 +17,7 @@ public class InsertIndex implements Comparable<InsertIndex> {
 		this(true, true, vNr, 0, 0, timeInc);
 	}
 	
-	public InsertIndex(boolean canAdd, boolean newRoute, int vNr, int routeNr, int routeIndex, int timeInc) {
+	private InsertIndex(boolean canAdd, boolean newRoute, int vNr, int routeNr, int routeIndex, int timeInc) {
 		this.canAdd = canAdd;
 		this.newRoute = newRoute;
 		this.vNr = vNr;

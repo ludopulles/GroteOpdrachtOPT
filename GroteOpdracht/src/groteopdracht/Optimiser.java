@@ -1,42 +1,49 @@
+
 package groteopdracht;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+import groteopdracht.datastructures.Afstanden;
 import groteopdracht.datastructures.InsertIndex;
 import groteopdracht.datastructures.Order;
+import groteopdracht.datastructures.Route;
 import groteopdracht.datastructures.WeekSchema;
 
 public class Optimiser {
-	
+
 	private WeekSchema solution;
-	
+
 	public Optimiser() {
 		this.solution = new WeekSchema();
 	}
-	
+
 	public void addGreedily(Comparator<Integer> orderComparator) {
-		Integer[] byPenalty = new Integer[Constants.ORDERS_IDS - 1];
-		for (int i = 0; i < byPenalty.length; i++) {
-			byPenalty[i] = i + 1;
+		List<Integer> byPenalty = new ArrayList<Integer>();
+		for (int i = 1; i < Constants.ORDERS_IDS; i++) {
+			byPenalty.add(i);
 		}
-		Arrays.sort(byPenalty, orderComparator);
+		// Arrays.sort(byPenalty, orderComparator);
+		Collections.shuffle(byPenalty);
 		for (int i : byPenalty) {
 			int freq = Order.orders[i].frequency;
+			// if (freq == 1) continue;
 			// try to fit o in the solution
 			InsertIndex[] indices = new InsertIndex[5];
 			for (int day = 0; day < 5; day++) {
 				indices[day] = this.solution.bestInsertIndex(day, i);
 			}
-			
 			if (freq == 1) {
 				// get best
 				int numCan = 0, bestIndex = -1;
 				for (int j = 0; j < 5; j++) {
 					if (indices[j].canAdd) {
 						numCan++;
-						if (bestIndex == -1 || indices[bestIndex].compareTo(indices[j]) < 0) {
+						if (bestIndex == -1 || indices[bestIndex]
+								.compareTo(indices[j]) < 0) {
 							bestIndex = j;
 						}
 					}
@@ -69,7 +76,8 @@ public class Optimiser {
 					}
 				}
 			} else if (freq == 3) {
-				if (indices[0].canAdd && indices[2].canAdd && indices[4].canAdd) {
+				if (indices[0].canAdd && indices[2].canAdd
+						&& indices[4].canAdd) {
 					this.solution.insertOrder(i);
 					this.solution.insert(0, indices[0], i);
 					this.solution.insert(2, indices[2], i);
@@ -77,15 +85,19 @@ public class Optimiser {
 				}
 			} else if (freq == 4) {
 				// remove worst
-				int numCan = 0, worstIndex = -1;
+				int numCan = 0, worstIndex = -1, notDrop = -1;
 				for (int j = 0; j < 5; j++) {
 					if (indices[j].canAdd) {
 						numCan++;
-						if (worstIndex == -1 || indices[worstIndex].compareTo(indices[j]) > 0) {
+						if (worstIndex == -1 || indices[worstIndex]
+								.compareTo(indices[j]) > 0) {
 							worstIndex = j;
 						}
+					} else {
+						notDrop = j;
 					}
 				}
+				if (numCan == 4) worstIndex = notDrop;
 				if (numCan >= 4) {
 					this.solution.insertOrder(i);
 					for (int j = 0; j < 5; j++) {
@@ -97,15 +109,70 @@ public class Optimiser {
 		}
 	}
 
-	public void optimiseOrders() {
-		// check if we can swap orders, to other places, so that the time is reduced!
+	public void addClosest() {
+		// consider only 1PWK orders
+		for (int day = 0; day < 5; day++) {
+			for (int vNr = 0; vNr < 2; vNr++) {
+				Route r;
+				int availableTime = Constants.MAX_TIME;
+				while (true) {
+					r = new Route();
+					int prev = 0;
+					while (true) {
+						int minOrder = -1, minTime = 1000 * 1000 * 1000;
+						for (int matrixID = 0; matrixID < Constants.MATRIX_IDS; matrixID++) {
+							for (int order : Order.atLocation.get(matrixID)) {
+								Order curOrder = Order.orders[order];
+								if (this.solution.isCollected(order)
+										|| curOrder.frequency != 1
+										|| !r.canAdd(order))
+									continue;
+								int newTime = availableTime - r.time
+										- curOrder.timeIncrease(prev, 0);
+								if (newTime < 0) continue;
+								int alt = Afstanden.tijd[Order.orders[prev].matrixID][matrixID];
+								if (alt < minTime) {
+									minTime = alt;
+									minOrder = order;
+								}
+							}
+						}
+						System.out.println("WE HEBEN " + minOrder);
+						if (minOrder == -1) {
+							break;
+						}
+						r.append(minOrder);
+						this.solution.insertOrder(minOrder);
+						prev = minOrder;
+					}
+					if (r.length() == 0) break;
+					this.solution.addRoute(day, vNr, r);
+					availableTime -= r.time;
+				}
+			}
+		}
+
+		for (int day = 0; day < 5; day++) {
+			for (int vNr = 0; vNr < 2; vNr++) {
+				this.solution.twoOpt(day, vNr);
+			}
+		}
 	}
-	
+
+	public void optimiseOrders() {
+		// check if we can swap orders, to other places, so that the time is
+		// reduced!
+	}
+
 	public void printSolution(BufferedWriter output) throws IOException {
 		this.solution.printSolution(output);
 		Main.infoMsg("Used orders: " + this.solution.getUsedOrders());
 		Main.infoMsg("Penalty: " + this.solution.getPenalty());
 		Main.infoMsg("Travel time: " + this.solution.getTravelTime());
 		Main.infoMsg("Score: " + this.solution.getScore());
+	}
+
+	public double getScore() {
+		return this.solution.getScore();
 	}
 }

@@ -3,6 +3,7 @@ package groteopdracht.datastructures;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import groteopdracht.Constants;
 
 /*
@@ -29,9 +30,10 @@ public class DagSchema {
 			for (int j = 0; j < array.size(); j++) {
 				Route r = array.get(j);
 				if (!r.canAdd(order)) continue;
-				for (int k = 0, rl = r.length(); k <= rl; k++) {
-					int prev = k == 0 ? 0 : r.get(k - 1);
-					int next = k == rl ? 0 : r.get(k);
+				
+				 for (int k = 0, rl = r.length(); k <= rl; k++) {
+					 int prev = k == 0 ? 0 : r.get(k - 1);
+					 int next = k == rl ? 0 : r.get(k);	
 					int increase = cur.timeIncrease(prev, next);
 					InsertIndex insert = new InsertIndex(i, j, k, increase);
 					if (increase <= timeLeft && bestIndex.compareTo(insert) > 0)
@@ -46,6 +48,21 @@ public class DagSchema {
 		}
 		return bestIndex;
 	}
+	
+	public boolean canAddRoute(int vNr, Route r) {
+		int t = vNr == 0 ? t1 : t2;
+		return r.time <= t;
+	}
+
+	public void addRoute(int vNr, Route r) {
+		if (vNr == 0) {
+			v1.add(r);
+			t1 -= r.time;
+		} else {
+			v2.add(r);
+			t2 -= r.time;
+		}
+	}
 
 	public void insert(InsertIndex index, int order) {
 		if (!index.canAdd) {
@@ -55,7 +72,6 @@ public class DagSchema {
 			Route r = new Route();
 			r.add(0, order);
 			(index.vNr == 0 ? v1 : v2).add(r);
-			
 		} else {
 			(index.vNr == 0 ? v1 : v2).get(index.routeNr).add(index.routeIndex,
 					order);
@@ -88,6 +104,12 @@ public class DagSchema {
 				System.out.println(extraInfo + " v = " + v + ", t = " + r.time
 						+ ", vs t = " + calcTime);
 			}
+		}
+	}
+
+	public void twoOpt(int vNr) {
+		for (Route r : vNr == 0 ? v1 : v2) {
+			r.twoOpt();
 		}
 	}
 }

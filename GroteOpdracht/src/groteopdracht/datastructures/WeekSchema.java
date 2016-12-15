@@ -25,13 +25,12 @@ public class WeekSchema {
 		for (Order o : Order.orders) {
 			this.penalty += o.penalty;
 		}
-		System.err.println("Current penalty: " + this.penalty);
 	}
 
 	public void printSolution(BufferedWriter w) throws IOException {
 		for (int i = 0; i < this.weekschema.length; i++) {
 			int dag = i + 1;
-			this.weekschema[i].debugTime("Dag " + i);
+//			this.weekschema[i].debugTime("Dag " + i);
 			for (int j = 0; j < 2; j++) {
 				List<Integer> arr = this.weekschema[i].exportRoute(j);
 				int sequence = 1;
@@ -48,8 +47,21 @@ public class WeekSchema {
 		if (isCollected.get(order)) return new InsertIndex();
 		return this.weekschema[day].bestInsertIndex(order);
 	}
+	
+	public void addRoute(int day, int vNr, Route r) {
+		// add to isCollected
+		for (Integer i : r.route) {
+			if (Order.orders[i].frequency != 1) {
+				throw new Error("WAT");
+			}
+//			this.insertOrder(i);
+		}
+		this.weekschema[day].addRoute(vNr, r);
+		this.travelTime += r.time;
+	}
 
 	public void insertOrder(int order) {
+		this.isCollected.set(order);
 		this.usedOrders++;
 		this.penalty -= Order.orders[order].penalty;
 	}
@@ -73,5 +85,13 @@ public class WeekSchema {
 	
 	public double getScore() {
 		return 1.0D / Constants.MINUTE_CONVERSION * (this.penalty + this.travelTime);
+	}
+
+	public boolean isCollected(int order) {
+		return this.isCollected.get(order);
+	}
+
+	public void twoOpt(int day, int vNr) {
+		this.weekschema[day].twoOpt(vNr);
 	}
 }
