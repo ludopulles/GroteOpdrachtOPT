@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import groteopdracht.Constants;
 
-/*
- * letterlijk alleen om een soort namespace te hebben
- */
+
 public final class Afstanden {
 
 	public static final int[][] tijd;

@@ -12,9 +12,7 @@ public class WeekSchema {
 	private DagSchema[] weekschema = new DagSchema[5];
 	private int usedOrders = 0, penalty, travelTime;
 
-	/**
-	 * Houdt bij welke orders opgehaald worden.
-	 */
+	
 	private BitSet isCollected = new BitSet(Constants.ORDERS_IDS);
 
 	public WeekSchema() {

@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.ListIterator;
 import groteopdracht.Constants;
 
-/*
- * Aannames: we splitsen een order niet, dus als we het ophalen, halen we gelijk alles op.
- * verder zorgen we ervoor dat we geen dingen dubbel bezoeken, want twee keer legen heeft geen nut (behalve order 0)
- */
+
 public class DagSchema {
 
 	private ArrayList<Route> v1, v2;

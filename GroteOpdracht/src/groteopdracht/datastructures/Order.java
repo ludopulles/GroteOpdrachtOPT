@@ -11,9 +11,7 @@ import groteopdracht.Constants;
 public class Order {
 
 	public static final Order[] orders;
-	/**
-	 * atLocation[i] = { j | orders[j] = i }
-	 */
+	
 	public static final ArrayList<ArrayList<Integer>> atLocation;
 	
 	static {
@@ -80,9 +78,7 @@ public class Order {
 	public final int orderID, frequency, numContainers, volume, emptyTime;
 	public final int matrixID, penalty, capacity;
 
-	/*
-	 * Leeg order, oftewel dumpen bij de dumpplaats. Dit kost 30 minuten
-	 */
+	
 	public Order() {
 		this(0, "0", 0, 0, Constants.DROP_TIME, Constants.DUMP_LOCATION);
 	}
@@ -99,18 +95,7 @@ public class Order {
 		this.capacity = this.volume * this.numContainers;
 	}
 
-	/**
-	 * Returns the increase in time when a route from prev to next, is changed
-	 * to a route from prev via this to next.
-	 * 
-	 * @param prev
-	 *            the order index after which the current order would be
-	 *            inserted
-	 * @param next
-	 *            the order index before which the current order would be
-	 *            inserted
-	 * @return increase in time units
-	 */
+	
 	public int timeIncrease(int prev, int next) {
 		int l = orders[prev].matrixID, m = this.matrixID,
 				r = orders[next].matrixID;
