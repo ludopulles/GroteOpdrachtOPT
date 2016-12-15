@@ -111,12 +111,14 @@ public class Optimiser {
 
 	public void addClosest() {
 		// consider only 1PWK orders
-		for (int day = 0; day < 5; day++) {
-			for (int vNr = 0; vNr < 2; vNr++) {
-				Route r;
-				int availableTime = Constants.MAX_TIME;
-				while (true) {
-					r = new Route();
+
+		boolean routeAdded = true;
+		while (routeAdded) {
+			routeAdded = false;
+			for (int day = 0; day < 5; day++) {
+				for (int vNr = 0; vNr < 2; vNr++) {
+					Route r = new Route();
+					int availableTime = this.solution.getTime(day, vNr);
 					int prev = 0;
 					while (true) {
 						int minOrder = -1, minTime = 1000 * 1000 * 1000;
@@ -137,7 +139,7 @@ public class Optimiser {
 								}
 							}
 						}
-						System.out.println("WE HEBEN " + minOrder);
+						// System.out.println("WE HEBEN " + minOrder);
 						if (minOrder == -1) {
 							break;
 						}
@@ -145,9 +147,12 @@ public class Optimiser {
 						this.solution.insertOrder(minOrder);
 						prev = minOrder;
 					}
-					if (r.length() == 0) break;
+					if (r.length() == 0) {
+						continue;
+					}
+					routeAdded = true;
 					this.solution.addRoute(day, vNr, r);
-					availableTime -= r.time;
+					// availableTime -= r.time;
 				}
 			}
 		}

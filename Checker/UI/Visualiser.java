@@ -165,8 +165,7 @@
            r.DrawRoute(this.solution, g, xOff, yOff, xF, yF);
          }
        }
-       
- 
+
        g.setColor(Color.black);
        for (Order o : this.solution.problem.getOrders())
        {
@@ -174,8 +173,11 @@
          int y = (int)(yF * (o.yCoord + yOff));
          
          if (o.freq == 1) {
-//             g.setColor(Color.black);
-//             g.drawRect(x - 1, y - 1, 2, 2);
+             g.setColor(Color.black);
+             g.drawRect(x - 1, y - 1, 2, 2);
+             
+             g.drawString("" + o.loc, x + 5, y + 5);
+             
         	 continue;
          }
          
