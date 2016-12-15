@@ -93,6 +93,10 @@ public class WeekSchema {
 		this.travelTime += this.weekschema[day].twoOpt(vNr);
 	}
 	
+	public void twoHalfOpt(int day, int vNr) {
+		this.travelTime += this.weekschema[day].twoHalfOpt(vNr);
+	}
+	
 	public int getTime(int day, int vNr) {
 		return this.weekschema[day].getTime(vNr);
 	}

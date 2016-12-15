@@ -160,6 +160,7 @@ public class Optimiser {
 		for (int day = 0; day < 5; day++) {
 			for (int vNr = 0; vNr < 2; vNr++) {
 				this.solution.twoOpt(day, vNr);
+				this.solution.twoHalfOpt(day, vNr);
 			}
 		}
 	}

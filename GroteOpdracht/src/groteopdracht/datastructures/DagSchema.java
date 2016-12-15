@@ -125,4 +125,24 @@ public class DagSchema {
 	public int getTime(int vNr) {
 		return vNr == 0 ? t1 : t2;
 	}
+
+	public int twoHalfOpt(int vNr) {
+		int diff = 0;
+		if (vNr == 0) {
+			for (Route r : v1) {
+				diff -= r.time;
+				r.twoHalfOpt();
+				diff += r.time;
+			}
+			t1 += diff;
+		} else {
+			for (Route r : v2) {
+				diff -= r.time;
+				r.twoHalfOpt();
+				diff += r.time;
+			}
+			t2 += diff;
+		}
+		return diff;
+	}
 }

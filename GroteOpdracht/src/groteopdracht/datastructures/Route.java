@@ -56,6 +56,7 @@ public class Route {
 		boolean improved = true;
 		while (improved) {
 			improved = false;
+			outer:
 			for (int i = 0; i < this.length(); i++) {
 				for (int j = i; ++j < this.length();) {
 					// int i = rand.nextInt(this.length());
@@ -81,7 +82,7 @@ public class Route {
 					}
 					if (nxttime < curtime) {
 						improved = true;
-						System.err.println(
+						System.err.println("2OPT: " +
 								i + ", " + j + ": " + curtime + " VS " + nxttime
 										+ " impr: " + (nxttime - curtime));
 						// beter!
@@ -93,10 +94,55 @@ public class Route {
 							j--;
 						}
 						this.time += nxttime - curtime; // < 0
+						
+						break outer;
 					}
 				}
 			}
 			
+		}
+	}
+
+	/**
+	 * Performs 2.5 opt on a route
+	 * 
+	 * 2.5 opt takes an index i, and an index j so that (j - i) > 1 (ie; they are no subsequent)
+	 * 
+	 * it then connects i to i+2, j to i+1, and i+1 to j+1, essentialy replacing the vertices ii+1, i+1i+2, jj+1 with ii+2, ji+1, i+1j+i
+	 */
+	public void twoHalfOpt() {
+		boolean improved = true;
+		while (improved) {
+			improved = false;
+			outer:
+			for (int i = 0; i < this.length(); i++) {
+				for (int j = i; ++j < this.length();) {
+					//System.out.println("Considering: " + i + " " + j);
+					// 2.5-opt:
+					int li = (i == 0) ? 0 : this.route.get(i-1);
+					int rj = (j == this.length() - 1) ? 0 : this.route.get(j + 1);
+					
+					int curtime = dist(li, route.get(i)) + dist(route.get(i), route.get(i+1)) + dist(route.get(j), rj);
+					int nxttime = dist(li, route.get(i + 1)) + dist(route.get(j), route.get(i)) + dist(route.get(i), rj);
+					
+					if (nxttime < curtime) {
+						improved = true;
+						System.err.println("2.5OPT: " + i + ", " + j + ": " + curtime + " VS " + nxttime + " impr: " + (nxttime - curtime));
+						
+						//rebuild the route;
+						//everything until j shifts left by one, then i takes that place.
+						int routei = route.get(i);
+						for (int k = i; k < j; k++) {
+							int t = route.get(k + 1);
+							route.set(k, t);
+						}
+						route.set(j, routei);
+						this.time += nxttime - curtime; // < 0.
+						
+						break outer; //restart the 2.5opt.
+					}
+				}
+			}
 		}
 	}
 }
