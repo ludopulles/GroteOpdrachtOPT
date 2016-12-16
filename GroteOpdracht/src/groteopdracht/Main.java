@@ -8,43 +8,59 @@ import checker.ui.App;
 
 public class Main {
 
+	private static final boolean IN_THREADS = false;
+
 	public static void infoMsg(String s) {
 		System.out.println("INFO: " + s);
 	}
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
-		
-		Optimiser beginOplossing = new Optimiser();
-		beginOplossing.addClosest();
-//		beginOplossing.doOpts();
-		
-//		theBest.addGreedily(new Comparator<Integer>() {
-//
-//			@Override
-//			public int compare(Integer o1, Integer o2) {
-//				return Order.orders[o2].penalty - Order.orders[o1].penalty;
-//			}
-//		});
-//		theBest.doOpts();
-		
+
+		Optimiser startSolution = new Optimiser();
+		startSolution.addClosest();
+
+		Optimiser best;
+		if (Main.IN_THREADS) {
+			best = improveAsync(startSolution);
+		} else {
+			best = improveSync(startSolution);
+		}
+
+		App checker = new App();
+		checker.setSize(800, 600);
+		checker.setLocationRelativeTo(null);
+		checker.setVisible(true);
+
+		checker.setSolution(best.getSolution());
+		best.storeSafely();
+
+		long endTime = System.currentTimeMillis();
+		System.err.println("TIME TAKEN: " + (endTime - startTime) + "ms");
+	}
+
+	private static Optimiser improveAsync(Optimiser startSolution) {
 		final int nThreads = 4;
 		RandomAdder[] adders = new RandomAdder[nThreads];
 		for (int i = 0; i < nThreads; i++) {
-			adders[i] = new RandomAdder(beginOplossing);
+			adders[i] = new RandomAdder(startSolution);
 			adders[i].start();
 		}
 		Scanner sc = new Scanner(System.in);
 		while (true) {
 			System.out.println("? ");
 			String line = sc.nextLine();
-			if ("stop".equalsIgnoreCase(line)) break;
+			if ("stop".equalsIgnoreCase(line))
+				break;
 			if ("best".equalsIgnoreCase(line)) {
 				double min = Double.POSITIVE_INFINITY;
-				for (int i = 0; i < nThreads; i++) min = Math.min(min, adders[i].getBestScore());
+				for (int i = 0; i < nThreads; i++)
+					min = Math.min(min, adders[i].getBestScore());
 				System.out.println("BEST SCORE: " + min);
 			}
 		}
+		sc.close();
+
 		for (int i = 0; i < nThreads; i++) {
 			adders[i].interrupt();
 		}
@@ -55,25 +71,16 @@ public class Main {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		
-		Optimiser best = beginOplossing;
+		Optimiser best = startSolution;
 		for (int i = 0; i < nThreads; i++) {
 			if (adders[i].getBest().compareTo(best) < 0) {
 				best = adders[i].getBest();
 			}
 		}
+		return best;
+	}
 
-		App checker = new App();
-		checker.setSize(800, 600);
-		checker.setLocationRelativeTo(null);
-		checker.setVisible(true);
-		
-		checker.setSolution(best.getSolution());
-		best.storeSafely();
-
-		long endTime = System.currentTimeMillis();
-		System.err.println("TIME TAKEN: " + (endTime - startTime) + "ms");
-		
-		sc.close();
+	private static Optimiser improveSync(Optimiser startSolution) {
+		return RandomAdder.iterate(startSolution, 10);
 	}
 }
