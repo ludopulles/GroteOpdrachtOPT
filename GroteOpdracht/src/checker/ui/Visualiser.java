@@ -21,37 +21,31 @@ import checker.validator.Order;
 import checker.validator.Solution;
 
 public class Visualiser extends JPanel implements ComponentListener, MouseListener, ChangeListener {
+
 	private static final long serialVersionUID = 8589186749519499054L;
-	App main;
-	Solution solution;
-	BufferedImage image;
-	JScrollPane scrollPane;
-	JScrollBar sp_h;
-	JScrollBar sp_v;
-	int viewPortWidth = 0;
-	int viewPortHeight = 0;
+	
+	private App main;
+	private Solution solution;
+	private BufferedImage image;
+	private JScrollPane scrollPane;
+	private JScrollBar sp_h, sp_v;
+	private int viewPortWidth = 0, viewPortHeight = 0;
+	private int zoom = 1;
+	private ArrayList<VisualiserRoute> routes;
 
-	int zoom = 1;
+	private long minX = Long.MAX_VALUE;
+	private long maxX = Long.MIN_VALUE;
+	private long minY = Long.MAX_VALUE;
+	private long maxY = Long.MIN_VALUE;
 
-	ArrayList<VisualiserRoute> routes;
+	private boolean repos = false;
 
-	long minX = Long.MAX_VALUE;
-	long maxX = Long.MIN_VALUE;
-	long minY = Long.MAX_VALUE;
-	long maxY = Long.MIN_VALUE;
-
-	boolean repos = false;
-
-	int center_x;
-
-	int center_y;
-	int oldMaxV;
-	int oldMaxH;
+	private int center_x, center_y;
+	private int oldMaxV, oldMaxH;
 	private boolean textVisible;
 
 	public Visualiser(App main) {
 		this.main = main;
-
 		this.routes = new ArrayList<>();
 		this.textVisible = false;
 		addMouseListener(this);
@@ -181,10 +175,12 @@ public class Visualiser extends JPanel implements ComponentListener, MouseListen
 				this.maxY = Math.max(this.maxY, o.yCoord);
 			}
 
-			this.minY = ((this.minY - (this.maxY - this.minY) / 2));
-			this.maxY = ((this.maxY + (this.maxY - this.minY) / 2));
-			this.minX = ((this.minX - (this.maxX - this.minX) / 2));
-			this.maxX = ((this.maxX + (this.maxX - this.minX) / 2));
+			long offset = (maxY - minY) / 10;
+			this.minY -= offset;
+			this.maxY += offset;
+			offset = (maxX - minX) / 10;
+			this.minX -= offset;
+			this.maxX += offset;
 
 			int routeId = 0;
 			this.routes.clear();

@@ -9,6 +9,19 @@ public class RandomAdder extends Thread {
 		this.best = new Optimiser(startSolution);
 	}
 	
+	public static Optimiser iterate(Optimiser solution, int n) {
+		Optimiser best = solution;
+		while (n-- > 0) {
+			Optimiser cur = new Optimiser(solution);
+			cur.addGreedilyRandom();
+			cur.doOpts();
+			if (cur.compareTo(best) < 0) {
+				best = cur;
+			}
+		}
+		return best;
+	}
+	
 	@Override
 	public void run() {
 		while (!this.isInterrupted()) {
