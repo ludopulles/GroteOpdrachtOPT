@@ -45,7 +45,29 @@ public class Route {
 	public boolean canAdd(int order) {
 		return this.capLeft >= Order.orders[order].capacity;
 	}
+	
+	public boolean canSet(int idx, int order) {
+		int currentcap = Order.orders[this.route.get(idx)].capacity;
+		int newcap = Order.orders[order].capacity;
+		int delta = newcap - currentcap;
+		return delta <= this.capLeft;
+	}
+	
+	public void set(int index, int order) {
+		int prev = (index == 0) ? 0 : route.get(index - 1);
+		int next = (index == this.route.size() - 1) ? 0 : route.get(index + 1);
+		
+		int old_time = dist(prev, route.get(index)) + dist(route.get(index), next) + Order.orders[route.get(index)].emptyTime;;
+		int new_time = dist(prev, order) + dist(order, next) + Order.orders[order].emptyTime;
+		this.time += new_time;
+		this.time -= old_time;
 
+		this.capLeft += Order.orders[route.get(index)].capacity;
+		this.capLeft -= Order.orders[order].capacity;
+		
+		this.route.set(index, order);
+	}
+	
 	public void append(int order) {
 		this.add(this.route.size(), order);
 	}

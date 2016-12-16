@@ -4,6 +4,7 @@ package groteopdracht.datastructures;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import groteopdracht.Constants;
 
@@ -30,6 +31,14 @@ public class DagSchema {
 		return vNr == 0 ? t1 : t2;
 	}
 
+	public void addTime(int vNr, int time) {
+		if (vNr == 0) {
+			t1 -= time;
+		} else {
+			t2 -= time;
+		}
+	}
+	
 	public InsertIndex bestInsertIndex(int order) {
 		InsertIndex bestIndex = new InsertIndex();
 		Order cur = Order.orders[order];
@@ -177,5 +186,10 @@ public class DagSchema {
 		if (vNr == 0) t1 += diff;
 		else t2 += diff;
 		return diff;
+	}
+
+	public Route getRandomRoute(int wagen, Random rand) {
+		ArrayList<Route> routes = (wagen == 0) ? v1 : v2;
+		return routes.get(rand.nextInt(routes.size()));
 	}
 }

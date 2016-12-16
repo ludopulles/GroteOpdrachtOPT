@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 import groteopdracht.datastructures.Afstanden;
 import groteopdracht.datastructures.InsertIndex;
@@ -171,7 +172,14 @@ public class Optimiser implements Comparable<Optimiser> {
 			}
 		}
 	}
-
+	
+	public void doRandomSwaps(int MAX_ITER) {
+		int iter = 0;
+		while (iter++ < MAX_ITER) { //try 100k random swaps.
+			this.solution.randomSwap();
+		}
+	}
+	
 	public void doOpts() {
 		for (int day = 0; day < 5; day++) {
 			for (int vNr = 0; vNr < 2; vNr++) {

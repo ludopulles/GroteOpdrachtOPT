@@ -39,6 +39,10 @@ public class Main {
 		}
 		best.removeBadOrders();
 
+		System.out.println("Before: " + best.getScore());
+		best.doRandomSwaps(100000000);
+		System.out.println("After: " + best.getScore());
+
 		showSolution(best);
 
 		long endTime = System.currentTimeMillis();
