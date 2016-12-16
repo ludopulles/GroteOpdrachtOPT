@@ -62,7 +62,6 @@ public class VisualiserPanel extends JPanel implements ListSelectionListener {
 			
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				System.err.println("Triggered: " + toggleText.isEnabled());
 				if (toggleText.isSelected()) {
 					toggleText.setText("Text visible");
 				} else {
@@ -73,13 +72,11 @@ public class VisualiserPanel extends JPanel implements ListSelectionListener {
 			}
 		});
 		sidePanel.add(toggleText, "South");
-
 		this.visualiser.setJScrollPane(scrollPane);
 	}
 
 	public void setRoutes(ArrayList<VisualiserRoute> routes) {
 		this.routes = routes;
-
 		this.showTripsModel.removeAllElements();
 
 		for (VisualiserRoute route : routes) {

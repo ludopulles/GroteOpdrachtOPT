@@ -2,6 +2,7 @@
 package groteopdracht;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,22 +16,38 @@ import groteopdracht.datastructures.Order;
 import groteopdracht.datastructures.Route;
 import groteopdracht.datastructures.WeekSchema;
 
-public class Optimiser {
+public class Optimiser implements Comparable<Optimiser> {
 
 	private WeekSchema solution;
 
 	public Optimiser() {
 		this.solution = new WeekSchema();
 	}
+	
+	public Optimiser(Optimiser copy) {
+		this.solution = new WeekSchema(copy.solution);
+	}
 
-	public void addGreedily(Comparator<Integer> orderComparator) {
-		List<Integer> byPenalty = new ArrayList<Integer>();
+	public void addGreedilyRandom() {
+		List<Integer> random = new ArrayList<Integer>();
 		for (int i = 1; i < Constants.ORDERS_IDS; i++) {
-			byPenalty.add(i);
+			random.add(i);
 		}
-		// Arrays.sort(byPenalty, orderComparator);
-		Collections.shuffle(byPenalty);
-		for (int i : byPenalty) {
+		Collections.shuffle(random);
+		this.addInOrder(random);
+	}
+	
+	public void addGreedily(Comparator<Integer> orderComparator) {
+		List<Integer> sorted = new ArrayList<Integer>();
+		for (int i = 1; i < Constants.ORDERS_IDS; i++) {
+			sorted.add(i);
+		}
+		Collections.sort(sorted, orderComparator);
+		this.addInOrder(sorted);
+	}
+	
+	public void addInOrder(List<Integer> permutation) {
+		for (int i : permutation) {
 			int freq = Order.orders[i].frequency;
 			// if (freq == 1) continue;
 			// try to fit o in the solution
@@ -158,8 +175,9 @@ public class Optimiser {
 	public void doOpts() {
 		for (int day = 0; day < 5; day++) {
 			for (int vNr = 0; vNr < 2; vNr++) {
-				this.solution.twoOpt(day, vNr);
-				this.solution.twoHalfOpt(day, vNr);
+				this.solution.opts(day, vNr);
+//				this.solution.twoOpt(day, vNr);
+//				this.solution.twoHalfOpt(day, vNr);
 			}
 		}
 	}
@@ -186,15 +204,33 @@ public class Optimiser {
 	}
 
 	public void storeSafely() {
+		File dir = new File(Constants.SOLUTIONS_DIR);
+		
+		// Assume a score between 1000 and 9999
 		long score = Math.round(this.getScore());
-		try (FileWriter fw = new FileWriter("solutions/score" + score + ".txt");) {
+		String name = "score" + score + ".txt";
+		
+		int idx = 0; // number of files which has a score less than this one
+		for (File f : dir.listFiles()) {
+			if (name.compareTo(f.getName()) >= 0) {
+				// name < f.getName();
+				if (++idx >= 10) return; // there are too many files better than this one.
+			} else break;
+		}
+
+		try (FileWriter fw = new FileWriter(Constants.SOLUTIONS_DIR + "/" + name)) {
 			BufferedWriter output = new BufferedWriter(fw);
 			this.printSolution(output);
 			output.flush();
 			output.close();
 		} catch (IOException e) {
-			// throw e;
 			System.err.println("Failed storing solution with score " + score + " safely.");
+			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public int compareTo(Optimiser rhs) {
+		return Double.compare(getScore(), rhs.getScore());
 	}
 }

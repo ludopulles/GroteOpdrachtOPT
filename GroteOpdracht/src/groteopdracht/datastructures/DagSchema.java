@@ -163,4 +163,24 @@ public class DagSchema {
 		}
 		return diff;
 	}
+	
+	public int opts(int vNr) {
+		int diff = 0;
+		if (vNr == 0) {
+			for (Route r : v1) {
+				diff -= r.time;
+				r.opts();
+				diff += r.time;
+			}
+			t1 += diff;
+		} else {
+			for (Route r : v2) {
+				diff -= r.time;
+				r.opts();
+				diff += r.time;
+			}
+			t2 += diff;
+		}
+		return diff;
+	}
 }

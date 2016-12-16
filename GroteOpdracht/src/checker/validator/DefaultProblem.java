@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.TreeMap;
 
+import groteopdracht.Constants;
+
 public final class DefaultProblem {
 	private static TreeMap<Integer, Order> defaultOrders;
 	private static int[][] defaultMatrix;
@@ -23,7 +25,8 @@ public final class DefaultProblem {
 
 	public static int[][] getDefaultMatrix() throws IOException {
 		if (defaultMatrix == null) {
-			BufferedReader br = new BufferedReader(new FileReader("resources/AfstandenMatrix.txt"));
+			String file = Constants.RESOURCES_DIR + "/AfstandenMatrix.txt";
+			BufferedReader br = new BufferedReader(new FileReader(file));
 			defaultMatrix = ProblemReader.reader.readDistances(br);
 		}
 		return defaultMatrix;
@@ -31,7 +34,8 @@ public final class DefaultProblem {
 
 	public static TreeMap<Integer, Order> getDefaultOrders() throws IOException {
 		if (defaultOrders == null) {
-			BufferedReader br = new BufferedReader(new FileReader("resources/Orderbestand.txt"));
+			String file = Constants.RESOURCES_DIR + "/Orderbestand.txt";
+			BufferedReader br = new BufferedReader(new FileReader(file));
 			defaultOrders = ProblemReader.reader.readOrders(br);
 		}
 		return defaultOrders;
