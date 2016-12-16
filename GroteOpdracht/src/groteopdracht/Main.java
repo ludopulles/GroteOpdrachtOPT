@@ -8,10 +8,20 @@ import checker.ui.App;
 
 public class Main {
 
-	private static final boolean IN_THREADS = false;
+	private static final boolean IN_THREADS = true;
 
 	public static void infoMsg(String s) {
 		System.out.println("INFO: " + s);
+	}
+	
+	public static void showSolution(Optimiser solution) {
+		App checker = new App();
+		checker.setSize(800, 600);
+		checker.setLocationRelativeTo(null);
+		checker.setVisible(true);
+
+		checker.setSolution(solution.getSolution());
+		solution.storeSafely();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -19,24 +29,21 @@ public class Main {
 
 		Optimiser startSolution = new Optimiser();
 		startSolution.addClosest();
+		startSolution.doOpts();
 
-		Optimiser best;
+		Optimiser best = startSolution;
 		if (Main.IN_THREADS) {
 			best = improveAsync(startSolution);
 		} else {
 			best = improveSync(startSolution);
 		}
+		best.removeBadOrders();
 
-		App checker = new App();
-		checker.setSize(800, 600);
-		checker.setLocationRelativeTo(null);
-		checker.setVisible(true);
-
-		checker.setSolution(best.getSolution());
-		best.storeSafely();
+		showSolution(best);
 
 		long endTime = System.currentTimeMillis();
 		System.err.println("TIME TAKEN: " + (endTime - startTime) + "ms");
+		System.err.println("USED SEED: we don't know...");
 	}
 
 	private static Optimiser improveAsync(Optimiser startSolution) {
@@ -53,9 +60,7 @@ public class Main {
 			if ("stop".equalsIgnoreCase(line))
 				break;
 			if ("best".equalsIgnoreCase(line)) {
-				double min = Double.POSITIVE_INFINITY;
-				for (int i = 0; i < nThreads; i++)
-					min = Math.min(min, adders[i].getBestScore());
+				double min = RandomAdder.getBest().getScore();
 				System.out.println("BEST SCORE: " + min);
 			}
 		}
@@ -71,16 +76,10 @@ public class Main {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		Optimiser best = startSolution;
-		for (int i = 0; i < nThreads; i++) {
-			if (adders[i].getBest().compareTo(best) < 0) {
-				best = adders[i].getBest();
-			}
-		}
-		return best;
+		return RandomAdder.getBest();
 	}
 
 	private static Optimiser improveSync(Optimiser startSolution) {
-		return RandomAdder.iterate(startSolution, 10);
+		return RandomAdder.iterate(startSolution, 100);
 	}
 }

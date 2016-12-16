@@ -4,8 +4,8 @@ package groteopdracht.datastructures;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
+
 import groteopdracht.Constants;
 
 public class Order {
@@ -14,7 +14,7 @@ public class Order {
 	public static ArrayList<ArrayList<Integer>> atLocation;
 
 	static {
-		Order[] t_orders = new Order[Constants.ORDERS_IDS];
+		Order[] t_orders = new Order[Constants.ORDER_IDS];
 		atLocation = new ArrayList<>(Constants.MATRIX_IDS);
 		for (int i = 0; i < Constants.MATRIX_IDS; i++) {
 			atLocation.add(new ArrayList<>());
@@ -51,17 +51,11 @@ public class Order {
 		orders = t_orders;
 		int maxAtLoc = 0;
 		for (int i = 0; i < Constants.MATRIX_IDS; i++) {
-			atLocation.get(i).sort(new Comparator<Integer>() {
-
-				@Override
-				public int compare(Integer o1, Integer o2) {
-					return Integer.compare(orders[o1].capacity, orders[o2].capacity);
-				}
-			});
 			maxAtLoc = Math.max(maxAtLoc, atLocation.get(i).size());
 		}
 
 		// Statistics:
+		System.out.println("Max " + maxAtLoc + " at one location");
 		for (int f : frequency.keySet()) {
 			System.out.println(
 					"Frequency " + f + ": " + frequency.get(f) + ", penalty: " + penaltySum.get(f) * 1.0 / 600);
@@ -85,6 +79,11 @@ public class Order {
 		this.capacity = this.volume * this.numContainers;
 	}
 
+	/**
+	 * @param prev the order no. from which we go to this order
+	 * @param next the order no. where we are heading after this order
+	 * @return the increase in total time when we empty the bins at this order
+	 */
 	public int timeIncrease(int prev, int next) {
 		int l = orders[prev].matrixID, m = this.matrixID, r = orders[next].matrixID;
 		return Afstanden.tijd[l][m] + Afstanden.tijd[m][r] - Afstanden.tijd[l][r] + this.emptyTime;

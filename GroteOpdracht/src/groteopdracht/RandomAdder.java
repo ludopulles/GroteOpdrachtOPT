@@ -2,22 +2,31 @@ package groteopdracht;
 
 public class RandomAdder extends Thread {
 	
-	private Optimiser startSolution, best;
+	private static volatile Optimiser best = new Optimiser();
+	private Optimiser startSolution;
+
+	public static Optimiser getBest() {
+		return best;
+	}
 	
 	public RandomAdder(Optimiser solution) {
 		this.startSolution = solution;
-		this.best = new Optimiser(startSolution);
+		// this.best = new Optimiser(startSolution);
+	}
+	
+	private static Optimiser optimiseRandom(Optimiser solution) {
+		Optimiser cur = new Optimiser(solution);
+		cur.addGreedilyRandom();
+		cur.doOpts();
+		cur.removeBadOrders();
+		cur.doOpts();
+		return cur;
 	}
 	
 	public static Optimiser iterate(Optimiser solution, int n) {
-		Optimiser best = solution;
 		while (n-- > 0) {
-			Optimiser cur = new Optimiser(solution);
-			cur.addGreedilyRandom();
-			cur.doOpts();
-			if (cur.compareTo(best) < 0) {
-				best = cur;
-			}
+			Optimiser cur = optimiseRandom(solution);
+			if (cur.compareTo(best) < 0) best = cur;
 		}
 		return best;
 	}
@@ -25,21 +34,11 @@ public class RandomAdder extends Thread {
 	@Override
 	public void run() {
 		while (!this.isInterrupted()) {
-			Optimiser cur = new Optimiser(startSolution);
-			cur.addGreedilyRandom();
-			cur.doOpts();
+			Optimiser cur = optimiseRandom(startSolution);
 			if (cur.compareTo(best) < 0) {
 				best = cur;
 				System.out.println("Solution found with score: " + best.getScore());
 			}
 		}
-	}
-	
-	public Optimiser getBest() {
-		return best;
-	}
-	
-	public double getBestScore() {
-		return best.getScore();
 	}
 }

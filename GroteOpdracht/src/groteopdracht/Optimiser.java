@@ -30,16 +30,16 @@ public class Optimiser implements Comparable<Optimiser> {
 
 	public void addGreedilyRandom() {
 		List<Integer> random = new ArrayList<Integer>();
-		for (int i = 1; i < Constants.ORDERS_IDS; i++) {
+		for (int i = 1; i < Constants.ORDER_IDS; i++) {
 			random.add(i);
 		}
-		Collections.shuffle(random);
+		Collections.shuffle(random, Constants.RANDOM);
 		this.addInOrder(random);
 	}
 	
 	public void addGreedily(Comparator<Integer> orderComparator) {
 		List<Integer> sorted = new ArrayList<Integer>();
-		for (int i = 1; i < Constants.ORDERS_IDS; i++) {
+		for (int i = 1; i < Constants.ORDER_IDS; i++) {
 			sorted.add(i);
 		}
 		Collections.sort(sorted, orderComparator);
@@ -186,13 +186,20 @@ public class Optimiser implements Comparable<Optimiser> {
 		// check if we can swap orders, to other places, so that the time is
 		// reduced!
 	}
+	
+	/**
+	 * Throws away orders, which cost more time, than the penalty.
+	 */
+	public void removeBadOrders() {
+		this.solution.removeBadOrders();
+	}
 
 	public void printSolution(BufferedWriter output) throws IOException {
 		this.solution.printSolution(output);
 		Main.infoMsg("Used orders: " + this.solution.getUsedOrders());
-		Main.infoMsg("Penalty: " + this.solution.getPenalty());
 		Main.infoMsg("Travel time: " + this.solution.getTravelTime());
-		Main.infoMsg("Score: " + this.solution.getScore());
+		Main.infoMsg("Penalty:     " + this.solution.getPenalty());
+		Main.infoMsg("Score:       " + this.solution.getScore());
 	}
 
 	public double getScore() {

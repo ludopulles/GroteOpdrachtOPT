@@ -2,7 +2,9 @@
 package groteopdracht.datastructures;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
 import groteopdracht.Constants;
 
 public class DagSchema {
@@ -106,81 +108,74 @@ public class DagSchema {
 		return ret;
 	}
 
-	public void debugTime(String extraInfo) {
-		for (int v = 0; v < 2; v++) {
-			for (Route r : (v == 0 ? v1 : v2)) {
-				int calcTime = Constants.DROP_TIME;
-				int curI = Constants.DUMP_LOCATION;
-				for (int orderNR : r.route) {
-					int nxtI = Order.orders[orderNR].matrixID;
-					calcTime += Afstanden.tijd[curI][nxtI];
-					calcTime += Order.orders[orderNR].emptyTime;
-					curI = nxtI;
-				}
-				calcTime += Afstanden.tijd[curI][Constants.DUMP_LOCATION];
-				System.out.println(extraInfo + " v = " + v + ", t = " + r.time
-						+ ", vs t = " + calcTime);
-			}
-		}
-	}
-
 	public int twoOpt(int vNr) {
 		int diff = 0;
-		if (vNr == 0) {
-			for (Route r : v1) {
-				diff -= r.time;
-				r.twoOpt();
-				diff += r.time;
-			}
-			t1 += diff;
-		} else {
-			for (Route r : v2) {
-				diff -= r.time;
-				r.twoOpt();
-				diff += r.time;
-			}
-			t2 += diff;
+		for (Route r : vNr == 0 ? v1 : v2) {
+			diff -= r.time;
+			r.twoOpt();
+			diff += r.time;
 		}
+		if (vNr == 0) 	t1 += diff;
+		else 			t2 += diff;
 		return diff;
 	}
 
 	public int twoHalfOpt(int vNr) {
 		int diff = 0;
-		if (vNr == 0) {
-			for (Route r : v1) {
-				diff -= r.time;
-				r.twoHalfOpt();
-				diff += r.time;
-			}
-			t1 += diff;
-		} else {
-			for (Route r : v2) {
-				diff -= r.time;
-				r.twoHalfOpt();
-				diff += r.time;
-			}
-			t2 += diff;
+		for (Route r : vNr == 0 ? v1 : v2) {
+			diff -= r.time;
+			r.twoHalfOpt();
+			diff += r.time;
 		}
+		if (vNr == 0) 	t1 += diff;
+		else 			t2 += diff;
 		return diff;
 	}
 	
 	public int opts(int vNr) {
 		int diff = 0;
-		if (vNr == 0) {
-			for (Route r : v1) {
-				diff -= r.time;
-				r.opts();
-				diff += r.time;
-			}
-			t1 += diff;
-		} else {
-			for (Route r : v2) {
-				diff -= r.time;
-				r.opts();
-				diff += r.time;
-			}
-			t2 += diff;
+		for (Route r : vNr == 0 ? v1 : v2) {
+			diff -= r.time;
+			r.opts();
+			diff += r.time;
 		}
+		if (vNr == 0) 	t1 += diff;
+		else 			t2 += diff;
+		return diff;
+	}
+
+	public void removeTimes(int[] times, int vNr) {
+		for (Route r : (vNr == 0 ? v1 : v2)) {
+			for (int i = 0, N = r.length(); i < N; i++) {
+				int lorder = i == 0 ? 0 : r.route.get(i - 1);
+				int rorder = i == N - 1 ? 0 : r.route.get(i + 1);
+				int cur = r.route.get(i);
+				// the 'increase' in time if we remove this order from the route:
+				times[cur] -= Order.orders[cur].timeIncrease(lorder, rorder);
+			}
+		}
+	}
+
+	public int removeAllNegatives(int[] times, int vNr) {
+		int diff = 0;
+		// ArrayList<Route> v = vNr == 0 ? v1 : v2;
+		Iterator<Route> it = (vNr == 0 ? v1 : v2).iterator();
+		// for (Route r : v) {
+		while (it.hasNext()) {
+			Route r = it.next();
+			for (int idx = 0; idx < r.length(); idx++) {
+				if (times[r.route.get(idx)] < 0) {
+					diff += r.removeOrderAt(idx);
+					idx--;
+				}
+			}
+			if (r.length() == 0) {
+				diff += r.time;
+				it.remove();
+			}
+		}
+		if (vNr == 0) t1 += diff;
+		else t2 += diff;
 		return diff;
 	}
 }

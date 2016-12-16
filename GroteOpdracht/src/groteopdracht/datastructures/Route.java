@@ -3,15 +3,21 @@ package groteopdracht.datastructures;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
-import java.util.Random;
+// import java.util.Random;
 
 import groteopdracht.Constants;
 
 public class Route {
 
-	public static final Random rand = new Random();
 	public final ArrayList<Integer> route;
-	public int capLeft, time;
+	/**
+	 * The number of liters that a truck has left for this cycle (possibly more than 1 cycle per day per truck).
+	 */
+	public int capLeft;
+	/**
+	 * The number of time units that is necessary to finish this cycle.
+	 */
+	public int time;
 
 	public Route() {
 		this.route = new ArrayList<>();
@@ -67,11 +73,10 @@ public class Route {
 				for (int j = i; ++j < N;) {
 					if (twoOpt(i, j)) {
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
 			}
-
 		}
 	}
 
@@ -90,16 +95,16 @@ public class Route {
 		while (improved) {
 			improved = false;
 			outer: for (int i = 0; i < N; i++) {
-				for (int j = 0; j < i; j++) {
+				for (int j = 0; j + 1 < i; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
-				for (int j = i + 2; j < N; j++) {
+				for (int j = i + 1; j < N; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
 			}
@@ -113,34 +118,28 @@ public class Route {
 		
 //		int k = 0;
 		while (improved) {
-//			System.out.println("IMPROVED: " + this.time);
-//			if (++k > 25) System.exit(1);
 			improved = false;
 			outer: for (int i = 0; i < N; i++) {
 				for (int j = 0; j + 1 < i; j++) {
 					if (twoHalfOpt(i, j)) {
-//						System.out.println("BETTER 2.5op: " + i + ", " + j);
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
 				for (int j = i + 1; j < N; j++) {
 					if (twoHalfOpt(i, j)) {
-//						System.out.println("BETTER 2.5o: " + i + ", " + j);
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
 				for (int j = i; ++j < N; j++) {
 					if (twoOpt(i, j)) {
-//						System.out.println("BETTER 2o: " + i + ", " + j);
 						improved = true;
-						break outer;
+//						break outer;
 					}
 				}
 			}
 		}
-//		System.out.println("STOP");
 	}
 
 	private boolean twoOpt(int i, int j) {
@@ -208,5 +207,15 @@ public class Route {
 		}
 		this.time += nxttime - curtime; // < 0.
 		return true;
+	}
+
+	public int removeOrderAt(int idx) {
+		int l = idx == 0 ? 0 : route.get(idx - 1);
+		int r = idx == route.size() - 1 ? 0 : route.get(idx + 1);
+		int diff = Order.orders[route.get(idx)].timeIncrease(l, r);
+		this.time -= diff;
+		this.capLeft += Order.orders[route.get(idx)].capacity;
+		this.route.remove(idx);
+		return diff;
 	}
 }
