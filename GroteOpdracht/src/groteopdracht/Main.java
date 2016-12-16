@@ -62,7 +62,11 @@ public class Main {
 				best = adders[i].getBest();
 			}
 		}
-
+		
+		System.out.println("BEFORE: " + best.getScore());
+		best.doRandomSwaps();
+		System.out.println("AFTER: " + best.getScore());
+		
 		App checker = new App();
 		checker.setSize(800, 600);
 		checker.setLocationRelativeTo(null);
