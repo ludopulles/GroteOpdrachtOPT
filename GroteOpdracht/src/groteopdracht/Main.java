@@ -28,7 +28,7 @@ public class Main {
 		}
 
 		System.out.println("Before: " + best.getScore());
-		best.doRandomSwaps();
+		best.doRandomSwaps(100000000);
 		System.out.println("After: " + best.getScore());
 		
 		App checker = new App();

@@ -134,7 +134,11 @@ public class WeekSchema {
 
 		Route r1 = this.weekschema[dag1].getRandomRoute(wagen1, rand);
 		Route r2 = this.weekschema[dag2].getRandomRoute(wagen2, rand);
-
+		
+		if (r1 == r2) {
+			return;
+		}
+		
 		int order_idx1 = rand.nextInt(r1.length());
 		int order1 = r1.get(order_idx1);
 		int lorder1 = (order_idx1 == 0) ? 0 : r1.get(order_idx1 - 1);
@@ -144,7 +148,8 @@ public class WeekSchema {
 		int order2 = r2.get(order_idx2);
 		int lorder2 = (order_idx2 == 0) ? 0 : r2.get(order_idx2 - 1);
 		int rorder2 = (order_idx2 == r2.length() - 1) ? 0 : r2.get(order_idx2 + 1);
-
+		
+		
 		// for now, consider only frequency 1 orders for swap.
 		if (Order.orders[order1].frequency != 1 || Order.orders[order2].frequency != 1) {
 			return;
@@ -163,7 +168,7 @@ public class WeekSchema {
 
 		int old_route1 = lo1_to_o1 + o1_to_ro1 + Order.orders[order1].emptyTime;
 		int old_route2 = lo2_to_o2 + o2_to_ro2 + Order.orders[order2].emptyTime;
-		
+
 		int old_time = old_route1 + old_route2;
 		
 		int lo1_to_o2 = dist(lorder1, order2);
@@ -173,7 +178,7 @@ public class WeekSchema {
 		
 		int new_route1 = lo1_to_o2 + o2_to_ro1 + Order.orders[order2].emptyTime;
 		int new_route2 = lo2_to_o1 + o1_to_ro2 + Order.orders[order1].emptyTime;
-		
+
 		int new_time = new_route1 + new_route2;
 		
 		
@@ -186,22 +191,15 @@ public class WeekSchema {
 		if (this.weekschema[dag2].getTime(wagen2) - (new_route2 - old_route2) <= 0) {
 			return;
 		}
-		
+
 		System.out.println("Found better time: " + new_time + " VS " + old_time);
-		int old = r1.time;
+
 		r1.set(order_idx1, order2);
-		int newt = r1.time;
-		
-		System.out.println("ROUTE: " + (newt - old) + ", MANUAL: " + (new_route1 - old_route1));
 		this.weekschema[dag1].addTime(wagen1, new_route1 - old_route1);
 		
-		int old2 = r2.time;
 		r2.set(order_idx2, order1);
-		int newt2 = r2.time;
-		
-		System.out.println("ROUTE: " + (newt2 - old2) + ", MANUAL: " + (new_route2 - old_route2));
 		this.weekschema[dag2].addTime(wagen2, new_route2 - old_route2);
-		
+
 		this.travelTime += (new_route1 - old_route1);
 		this.travelTime += (new_route2 - old_route2);
 	}

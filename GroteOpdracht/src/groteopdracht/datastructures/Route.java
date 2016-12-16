@@ -51,13 +51,11 @@ public class Route {
 		int prev = (index == 0) ? 0 : route.get(index - 1);
 		int next = (index == this.route.size() - 1) ? 0 : route.get(index + 1);
 		
-		int old_time = dist(prev, route.get(index)) + dist(route.get(index), next);
-		int new_time = dist(prev, order) + dist(order, next);
+		int old_time = dist(prev, route.get(index)) + dist(route.get(index), next) + Order.orders[route.get(index)].emptyTime;;
+		int new_time = dist(prev, order) + dist(order, next) + Order.orders[order].emptyTime;
 		this.time += new_time;
 		this.time -= old_time;
-		this.time += Order.orders[order].emptyTime;
-		this.time -= Order.orders[route.get(index)].emptyTime;
-				
+
 		this.capLeft += Order.orders[route.get(index)].capacity;
 		this.capLeft -= Order.orders[order].capacity;
 		

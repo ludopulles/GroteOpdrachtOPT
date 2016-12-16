@@ -173,9 +173,9 @@ public class Optimiser implements Comparable<Optimiser> {
 		}
 	}
 	
-	public void doRandomSwaps() {
+	public void doRandomSwaps(int MAX_ITER) {
 		int iter = 0;
-		while (iter++ < 100000) { //try 100k random swaps.
+		while (iter++ < MAX_ITER) { //try 100k random swaps.
 			this.solution.randomSwap();
 		}
 	}
