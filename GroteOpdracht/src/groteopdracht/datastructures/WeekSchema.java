@@ -161,20 +161,20 @@ public class WeekSchema {
 		int lo2_to_o2 = dist(lorder2, order2);
 		int o2_to_ro2 = dist(order2, rorder2);
 
-		int old_route1 = lo1_to_o1 + o1_to_ro1;
-		int old_route2 = lo2_to_o2 + o2_to_ro2;
+		int old_route1 = lo1_to_o1 + o1_to_ro1 + Order.orders[order1].emptyTime;
+		int old_route2 = lo2_to_o2 + o2_to_ro2 + Order.orders[order2].emptyTime;
 		
-		int old_time = lo1_to_o1 + o1_to_ro1 + lo2_to_o2 + o2_to_ro2;
+		int old_time = old_route1 + old_route2;
 		
 		int lo1_to_o2 = dist(lorder1, order2);
 		int o2_to_ro1 = dist(order2, rorder1);
 		int lo2_to_o1 = dist(lorder2, order1);
 		int o1_to_ro2 = dist(order1, rorder2);
 		
-		int new_route1 = lo1_to_o2 + o2_to_ro1;
-		int new_route2 = lo2_to_o1 + o1_to_ro2;
+		int new_route1 = lo1_to_o2 + o2_to_ro1 + Order.orders[order2].emptyTime;
+		int new_route2 = lo2_to_o1 + o1_to_ro2 + Order.orders[order1].emptyTime;
 		
-		int new_time = lo1_to_o2 + o2_to_ro1 + lo2_to_o1 + o1_to_ro2;
+		int new_time = new_route1 + new_route2;
 		
 		
 		if (new_time >= old_time) {
@@ -188,11 +188,18 @@ public class WeekSchema {
 		}
 		
 		System.out.println("Found better time: " + new_time + " VS " + old_time);
+		int old = r1.time;
 		r1.set(order_idx1, order2);
+		int newt = r1.time;
 		
+		System.out.println("ROUTE: " + (newt - old) + ", MANUAL: " + (new_route1 - old_route1));
 		this.weekschema[dag1].addTime(wagen1, new_route1 - old_route1);
 		
+		int old2 = r2.time;
 		r2.set(order_idx2, order1);
+		int newt2 = r2.time;
+		
+		System.out.println("ROUTE: " + (newt2 - old2) + ", MANUAL: " + (new_route2 - old_route2));
 		this.weekschema[dag2].addTime(wagen2, new_route2 - old_route2);
 		
 		this.travelTime += (new_route1 - old_route1);

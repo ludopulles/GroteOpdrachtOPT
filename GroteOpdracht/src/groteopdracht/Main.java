@@ -8,7 +8,7 @@ import checker.ui.App;
 
 public class Main {
 
-	private static final boolean IN_THREADS = false;
+	private static final boolean IN_THREADS = true;
 
 	public static void infoMsg(String s) {
 		System.out.println("INFO: " + s);
@@ -27,6 +27,10 @@ public class Main {
 			best = improveSync(startSolution);
 		}
 
+		System.out.println("Before: " + best.getScore());
+		best.doRandomSwaps();
+		System.out.println("After: " + best.getScore());
+		
 		App checker = new App();
 		checker.setSize(800, 600);
 		checker.setLocationRelativeTo(null);
