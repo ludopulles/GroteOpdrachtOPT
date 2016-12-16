@@ -13,7 +13,7 @@ import groteopdracht.datastructures.WeekSchema;
 public class Main {
 
 	private static final boolean IN_THREADS = true;
-	private static final boolean USE_BEST = false;
+	private static final boolean USE_BEST = true;
 
 	public static void infoMsg(String s) {
 		System.out.println("INFO: " + s);
@@ -28,13 +28,12 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
+		Scanner sc = new Scanner(System.in);
 		long startTime = System.currentTimeMillis();
 		WeekSchema best = null;
 		if (USE_BEST) {
 			System.out.print("Which file do you want to optimise? ");
-			Scanner sc = new Scanner(System.in);
 			long score = sc.nextLong();
-			sc.close();
 			File file = new File(Constants.SOLUTIONS_DIR + "/score" + score + ".txt");
 			System.out.println("Reading solution from " + file.getName());
 			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -44,44 +43,44 @@ public class Main {
 			}
 		}
 		if (best == null) {
-			WeekSchema startSolution = new WeekSchema();
-			startSolution.addClosest();
-			startSolution.doOpts();
-			best = startSolution;
-			if (Main.IN_THREADS) {
-				best = improveAsync(startSolution);
-			} else {
-				best = improveSync(startSolution);
-			}
-			best.removeBadOrders();
+			best = new WeekSchema();
+			best.addClosest();
+			best.doOpts();
 		}
+		WeekSchema copy = new WeekSchema(best);
+		if (Main.IN_THREADS) {
+			best = improveAsync(copy, sc);
+		} else {
+			best = improveSync(copy);
+		}
+		best.removeBadOrders();
 
 		System.out.println("Before: " + best.getScore());
 		best.doRandomSwaps((int) 1e7);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 10; i++) {
 			best.removeBadOrders();
 			// best.addGreedilyRandom();
 			best.doOpts();
-			best.doRandomSwaps((int) 1e6);
+			best.doRandomSwaps((int) 2e6);
 		}
 		System.out.println("After: " + best.getScore());
 
 		showSolution(best);
 		best.storeSafely();
 
+		sc.close();
 		long endTime = System.currentTimeMillis();
 		System.err.println("TIME TAKEN: " + (endTime - startTime) + "ms");
 		System.err.println("USED SEED: we don't know...");
 	}
 
-	private static WeekSchema improveAsync(WeekSchema startSolution) {
+	private static WeekSchema improveAsync(WeekSchema startSolution, Scanner sc) {
 		final int nThreads = 4;
 		RandomAdder[] adders = new RandomAdder[nThreads];
 		for (int i = 0; i < nThreads; i++) {
 			adders[i] = new RandomAdder(startSolution);
 			adders[i].start();
 		}
-		Scanner sc = new Scanner(System.in);
 		while (true) {
 			System.out.println("? ");
 			String line = sc.nextLine();
@@ -92,7 +91,6 @@ public class Main {
 				System.out.println("BEST SCORE: " + min);
 			}
 		}
-		sc.close();
 
 		for (int i = 0; i < nThreads; i++) {
 			adders[i].interrupt();
