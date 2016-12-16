@@ -1,10 +1,11 @@
 
 package groteopdracht;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Comparator;
+
+import checker.ui.App;
+import groteopdracht.datastructures.Order;
 
 public class Main {
 
@@ -32,19 +33,24 @@ public class Main {
 //			}
 //		}
 		theBest.addClosest();
-		
+		theBest.doOpts();
+		theBest.addGreedily(new Comparator<Integer>() {
+			
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return Order.orders[o2].penalty - Order.orders[o1].penalty;
+			}
+		});
+		theBest.doOpts();
 		long endTime = System.currentTimeMillis();
-		
 		System.err.println("TIME TAKEN: " + (endTime - startTime));
+		theBest.storeSafely();
 
-		File f = new File("solutions/thebest" + ".txt");
-		System.err.println(f.getAbsolutePath());
+		App checker = new App();
+		checker.setSize(800, 600);
+		checker.setLocationRelativeTo(null);
+		checker.setVisible(true);
 		
-		try (BufferedWriter output = new BufferedWriter(
-				new FileWriter(f))) {
-			theBest.printSolution(output);
-		} catch (IOException e) {
-			throw e;
-		}
+		checker.setSolution(theBest.getSolution());
 	}
 }

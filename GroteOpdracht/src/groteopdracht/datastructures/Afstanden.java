@@ -7,11 +7,11 @@ import groteopdracht.Constants;
 
 public final class Afstanden {
 
-	public static final int[][] tijd;
+	public static int[][] tijd;
 
 	static {
 		int[][] t_time = new int[Constants.MATRIX_IDS][Constants.MATRIX_IDS];
-		try (BufferedReader distanceReader = new BufferedReader(new FileReader("../AfstandenMatrix.txt"))) {
+		try (BufferedReader distanceReader = new BufferedReader(new FileReader("resources/AfstandenMatrix.txt"))) {
 			distanceReader.readLine();
 			for (int i = 0; i < Constants.MATRIX_IDS; i++) {
 				for (int j = 0; j < Constants.MATRIX_IDS; j++) {

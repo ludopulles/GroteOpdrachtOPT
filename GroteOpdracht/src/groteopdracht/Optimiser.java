@@ -2,11 +2,13 @@
 package groteopdracht;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import groteopdracht.datastructures.Afstanden;
 import groteopdracht.datastructures.InsertIndex;
 import groteopdracht.datastructures.Order;
@@ -42,8 +44,7 @@ public class Optimiser {
 				for (int j = 0; j < 5; j++) {
 					if (indices[j].canAdd) {
 						numCan++;
-						if (bestIndex == -1 || indices[bestIndex]
-								.compareTo(indices[j]) < 0) {
+						if (bestIndex == -1 || indices[bestIndex].compareTo(indices[j]) < 0) {
 							bestIndex = j;
 						}
 					}
@@ -76,8 +77,7 @@ public class Optimiser {
 					}
 				}
 			} else if (freq == 3) {
-				if (indices[0].canAdd && indices[2].canAdd
-						&& indices[4].canAdd) {
+				if (indices[0].canAdd && indices[2].canAdd && indices[4].canAdd) {
 					this.solution.insertOrder(i);
 					this.solution.insert(0, indices[0], i);
 					this.solution.insert(2, indices[2], i);
@@ -89,19 +89,20 @@ public class Optimiser {
 				for (int j = 0; j < 5; j++) {
 					if (indices[j].canAdd) {
 						numCan++;
-						if (worstIndex == -1 || indices[worstIndex]
-								.compareTo(indices[j]) > 0) {
+						if (worstIndex == -1 || indices[worstIndex].compareTo(indices[j]) > 0) {
 							worstIndex = j;
 						}
 					} else {
 						notDrop = j;
 					}
 				}
-				if (numCan == 4) worstIndex = notDrop;
+				if (numCan == 4)
+					worstIndex = notDrop;
 				if (numCan >= 4) {
 					this.solution.insertOrder(i);
 					for (int j = 0; j < 5; j++) {
-						if (j == worstIndex) continue;
+						if (j == worstIndex)
+							continue;
 						this.solution.insert(j, indices[j], i);
 					}
 				}
@@ -125,13 +126,11 @@ public class Optimiser {
 						for (int matrixID = 0; matrixID < Constants.MATRIX_IDS; matrixID++) {
 							for (int order : Order.atLocation.get(matrixID)) {
 								Order curOrder = Order.orders[order];
-								if (this.solution.isCollected(order)
-										|| curOrder.frequency != 1
-										|| !r.canAdd(order))
+								if (this.solution.isCollected(order) || curOrder.frequency != 1 || !r.canAdd(order))
 									continue;
-								int newTime = availableTime - r.time
-										- curOrder.timeIncrease(prev, 0);
-								if (newTime < 0) continue;
+								int newTime = availableTime - r.time - curOrder.timeIncrease(prev, 0);
+								if (newTime < 0)
+									continue;
 								int alt = Afstanden.tijd[Order.orders[prev].matrixID][matrixID];
 								if (alt < minTime) {
 									minTime = alt;
@@ -139,7 +138,6 @@ public class Optimiser {
 								}
 							}
 						}
-						// System.out.println("WE HEBEN " + minOrder);
 						if (minOrder == -1) {
 							break;
 						}
@@ -152,11 +150,12 @@ public class Optimiser {
 					}
 					routeAdded = true;
 					this.solution.addRoute(day, vNr, r);
-					// availableTime -= r.time;
 				}
 			}
 		}
+	}
 
+	public void doOpts() {
 		for (int day = 0; day < 5; day++) {
 			for (int vNr = 0; vNr < 2; vNr++) {
 				this.solution.twoOpt(day, vNr);
@@ -180,5 +179,22 @@ public class Optimiser {
 
 	public double getScore() {
 		return this.solution.getScore();
+	}
+
+	public WeekSchema getSolution() {
+		return this.solution;
+	}
+
+	public void storeSafely() {
+		long score = Math.round(this.getScore());
+		try (FileWriter fw = new FileWriter("solutions/score" + score + ".txt");) {
+			BufferedWriter output = new BufferedWriter(fw);
+			this.printSolution(output);
+			output.flush();
+			output.close();
+		} catch (IOException e) {
+			// throw e;
+			System.err.println("Failed storing solution with score " + score + " safely.");
+		}
 	}
 }

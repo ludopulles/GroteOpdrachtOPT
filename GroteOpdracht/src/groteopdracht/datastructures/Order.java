@@ -10,8 +10,9 @@ import groteopdracht.Constants;
 
 public class Order {
 
-	public static final Order[] orders;
-	public static final ArrayList<ArrayList<Integer>> atLocation;
+	public static Order[] orders;
+	public static ArrayList<ArrayList<Integer>> atLocation;
+
 	static {
 		Order[] t_orders = new Order[Constants.ORDERS_IDS];
 		atLocation = new ArrayList<>(Constants.MATRIX_IDS);
@@ -21,7 +22,7 @@ public class Order {
 		HashMap<Integer, Integer> frequency = new HashMap<>(),
 				penaltySum = new HashMap<>();
 		try (BufferedReader orderReader = new BufferedReader(
-				new FileReader("../Orderbestand.txt"))) {
+				new FileReader("resources/Orderbestand.txt"))) {
 			orderReader.readLine();
 			String line;
 			t_orders[0] = new Order();
@@ -29,19 +30,14 @@ public class Order {
 				String[] parts = line.split(";");
 				int leegTijd = (int) Math.round(Double.parseDouble(parts[5])
 						* Constants.MINUTE_CONVERSION);
-				// if (Math.floor(leegTijdD) != leegTijdD) {
-				// System.err.println("Strange time: " + parts[5] + " : " +
-				// leegTijdD + " VS " + Math.floor(leegTijdD));
-				// }
 				int orderID = Integer.parseInt(parts[0]);
 				int numContainers = Integer.parseInt(parts[3]);
 				int volume = Integer.parseInt(parts[4]);
-				// int leegTijd = (int) (Double.parseDouble(parts[5])
-				// * Constants.MINUTE_CONVERSION);
 				int matrixID = Integer.parseInt(parts[6]);
 				t_orders[i] = new Order(orderID, parts[2], numContainers,
 						volume, leegTijd, matrixID);
 				atLocation.get(matrixID).add(i);
+				
 				if (!frequency.containsKey(t_orders[i].frequency)) {
 					frequency.put(t_orders[i].frequency, 0);
 				}
@@ -70,6 +66,8 @@ public class Order {
 			});
 			maxAtLoc = Math.max(maxAtLoc, atLocation.get(i).size());
 		}
+		
+		// Statistics:
 		for (int f : frequency.keySet()) {
 			System.out.println("Frequency " + f + ": " + frequency.get(f)
 					+ ", penalty: " + penaltySum.get(f) * 1.0 / 600);

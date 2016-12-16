@@ -15,6 +15,18 @@ public class DagSchema {
 		v2 = new ArrayList<>();
 		t1 = t2 = Constants.MAX_TIME;
 	}
+	
+	public DagSchema(DagSchema copy) {
+		this();
+		for (Route r : copy.v1) v1.add(new Route(r));
+		for (Route r : copy.v2) v2.add(new Route(r));
+		this.t1 = copy.t1;
+		this.t2 = copy.t2;
+	}
+
+	public int getTime(int vNr) {
+		return vNr == 0 ? t1 : t2;
+	}
 
 	public InsertIndex bestInsertIndex(int order) {
 		InsertIndex bestIndex = new InsertIndex();
@@ -74,11 +86,22 @@ public class DagSchema {
 		else t2 -= index.timeInc;
 	}
 
-	public List<Integer> exportRoute(int j) {
+	public List<Integer> getIds(int vNr) {
 		ArrayList<Integer> ret = new ArrayList<>();
-		for (Route r : (j == 0 ? v1 : v2)) {
+		for (Route r : (vNr == 0 ? v1 : v2)) {
 			ret.addAll(r.route);
 			ret.add(0);
+		}
+		return ret;
+	}
+	
+	public List<Integer> getOrderIds(int vNr) {
+		ArrayList<Integer> ret = new ArrayList<>();
+		for (Route r : (vNr == 0 ? v1 : v2)) {
+			for (int id : r.route) {
+				ret.add(Order.orders[id].orderID);
+			}
+			ret.add(Order.orders[0].orderID);
 		}
 		return ret;
 	}
@@ -119,11 +142,6 @@ public class DagSchema {
 			t2 += diff;
 		}
 		return diff;
-	}
-	
-	
-	public int getTime(int vNr) {
-		return vNr == 0 ? t1 : t2;
 	}
 
 	public int twoHalfOpt(int vNr) {

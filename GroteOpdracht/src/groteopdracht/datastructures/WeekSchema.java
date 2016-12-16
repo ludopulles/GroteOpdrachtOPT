@@ -24,13 +24,22 @@ public class WeekSchema {
 			this.penalty += o.penalty;
 		}
 	}
+	
+	public WeekSchema(WeekSchema copy) {
+		for (int i = 0; i < 5; i++) {
+			this.weekschema[i] = new DagSchema(copy.weekschema[i]);
+		}
+		this.penalty = copy.penalty;
+		this.travelTime = copy.travelTime;
+		this.isCollected = (BitSet) copy.isCollected.clone();
+	}
 
 	public void printSolution(BufferedWriter w) throws IOException {
 		for (int i = 0; i < this.weekschema.length; i++) {
 			int dag = i + 1;
 //			this.weekschema[i].debugTime("Dag " + i);
 			for (int j = 0; j < 2; j++) {
-				List<Integer> arr = this.weekschema[i].exportRoute(j);
+				List<Integer> arr = this.weekschema[i].getIds(j);
 				int sequence = 1;
 				for (int k : arr) {
 					w.write((j + 1) + "; " + dag + "; " + sequence++ + "; "
@@ -99,5 +108,9 @@ public class WeekSchema {
 	
 	public int getTime(int day, int vNr) {
 		return this.weekschema[day].getTime(vNr);
+	}
+
+	public List<Integer> exportOrderIds(int day, int vNr) {
+		return this.weekschema[day].getOrderIds(vNr);
 	}
 }
