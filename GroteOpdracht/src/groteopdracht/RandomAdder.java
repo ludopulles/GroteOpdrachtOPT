@@ -1,21 +1,23 @@
 package groteopdracht;
 
+import groteopdracht.datastructures.WeekSchema;
+
 public class RandomAdder extends Thread {
 	
-	private static volatile Optimiser best = new Optimiser();
-	private Optimiser startSolution;
+	private static volatile WeekSchema best = new WeekSchema();
+	private WeekSchema startSolution;
 
-	public static Optimiser getBest() {
+	public static WeekSchema getBest() {
 		return best;
 	}
 	
-	public RandomAdder(Optimiser solution) {
+	public RandomAdder(WeekSchema solution) {
 		this.startSolution = solution;
-		// this.best = new Optimiser(startSolution);
+		// this.best = new WeekSchema(startSolution);
 	}
 	
-	private static Optimiser optimiseRandom(Optimiser solution) {
-		Optimiser cur = new Optimiser(solution);
+	private static WeekSchema WeekSchemaandom(WeekSchema solution) {
+		WeekSchema cur = new WeekSchema(solution);
 		cur.addGreedilyRandom();
 		cur.doOpts();
 		cur.removeBadOrders();
@@ -23,9 +25,9 @@ public class RandomAdder extends Thread {
 		return cur;
 	}
 	
-	public static Optimiser iterate(Optimiser solution, int n) {
+	public static WeekSchema iterate(WeekSchema solution, int n) {
 		while (n-- > 0) {
-			Optimiser cur = optimiseRandom(solution);
+			WeekSchema cur = WeekSchemaandom(solution);
 			if (cur.compareTo(best) < 0) best = cur;
 		}
 		return best;
@@ -34,7 +36,7 @@ public class RandomAdder extends Thread {
 	@Override
 	public void run() {
 		while (!this.isInterrupted()) {
-			Optimiser cur = optimiseRandom(startSolution);
+			WeekSchema cur = WeekSchemaandom(startSolution);
 			if (cur.compareTo(best) < 0) {
 				best = cur;
 				System.out.println("Solution found with score: " + best.getScore());

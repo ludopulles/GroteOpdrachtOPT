@@ -20,6 +20,8 @@ public class Constants {
 	public static int MAX_TIME = MINUTE_CONVERSION * 12 * 60;
 	public static int MAX_CAPACITY = 20000 * 5;
 	
+	public static int[][] fivePerms = new int[120][5];
+	
 //	public static int CURRENT_MAX_TIME = MAX_TIME;
 //	public static int CURRENT_MAX_CAPACITY = MAX_CAPACITY;
 //
@@ -32,4 +34,28 @@ public class Constants {
 //		CURRENT_MAX_TIME = maxTime;
 //		CURRENT_MAX_CAPACITY = maxCapacity;
 //	}
+	
+	static {
+		int idx = 0;
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				if (j == i) continue;
+				for (int k = 0; k < 5; k++) {
+					if (k == j || k == i) continue;
+					for (int l = 0; l < 5; l++) {
+						if (l == k || l == j || l == i) continue;
+						for (int m = 0; m < 5; m++) {
+							if (m == l || m == k || m == j || m == i) continue;
+							fivePerms[idx][0] = i;
+							fivePerms[idx][1] = j;
+							fivePerms[idx][2] = k;
+							fivePerms[idx][3] = l;
+							fivePerms[idx][4] = m;
+							idx++;
+						}
+					}
+				}
+			}
+		}
+	}
 }

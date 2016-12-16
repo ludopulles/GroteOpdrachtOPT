@@ -12,9 +12,12 @@ public class Order {
 
 	public static Order[] orders;
 	public static ArrayList<ArrayList<Integer>> atLocation;
+	// order ID -> index in orders
+	public static HashMap<Integer, Integer> invOrderIDs = new HashMap<>();
 
 	static {
 		Order[] t_orders = new Order[Constants.ORDER_IDS];
+		invOrderIDs.put(0, 0);
 		atLocation = new ArrayList<>(Constants.MATRIX_IDS);
 		for (int i = 0; i < Constants.MATRIX_IDS; i++) {
 			atLocation.add(new ArrayList<>());
@@ -27,6 +30,7 @@ public class Order {
 			t_orders[0] = new Order();
 			for (int i = 1; (line = orderReader.readLine()) != null; i++) {
 				String[] parts = line.split(";");
+				for (int p = 0; p < parts.length; p++) parts[p] = parts[p].trim();
 				int leegTijd = (int) Math.round(Double.parseDouble(parts[5]) * Constants.MINUTE_CONVERSION);
 				int orderID = Integer.parseInt(parts[0]);
 				int numContainers = Integer.parseInt(parts[3]);
@@ -35,6 +39,9 @@ public class Order {
 				t_orders[i] = new Order(orderID, parts[2], numContainers, volume, leegTijd, matrixID);
 				atLocation.get(matrixID).add(i);
 
+				// invOrder
+				invOrderIDs.put(orderID, i);
+				
 				if (!frequency.containsKey(t_orders[i].frequency)) {
 					frequency.put(t_orders[i].frequency, 0);
 				}

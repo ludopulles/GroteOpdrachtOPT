@@ -17,6 +17,7 @@ public final class Afstanden {
 			for (int i = 0; i < Constants.MATRIX_IDS; i++) {
 				for (int j = 0; j < Constants.MATRIX_IDS; j++) {
 					String[] parts = distanceReader.readLine().split(";");
+					for (int p = 0; p < parts.length; p++) parts[p] = parts[p].trim();
 					t_time[Integer.parseInt(parts[0])][Integer.parseInt(parts[1])] = Constants.MINUTE_CONVERSION / 60
 							* Integer.parseInt(parts[3]);
 				}
