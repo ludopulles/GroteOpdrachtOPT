@@ -18,7 +18,7 @@ public class Main {
 	public static void infoMsg(String s) {
 		System.out.println("INFO: " + s);
 	}
-	
+
 	public static void showSolution(WeekSchema solution) {
 		App checker = new App();
 		checker.setSize(800, 600);
@@ -29,33 +29,41 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
-		WeekSchema startSolution = new WeekSchema();
+		WeekSchema best = null;
 		if (USE_BEST) {
-			File dir = new File(Constants.SOLUTIONS_DIR);
-			File[] files = dir.listFiles();
-			if (files.length > 0) {
-				System.out.println("Reading solution from " + files[0].getName());
-				try (BufferedReader br = new BufferedReader(new FileReader(files[0]))) {
-					startSolution = new WeekSchema(br);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			System.out.print("Which file do you want to optimise? ");
+			Scanner sc = new Scanner(System.in);
+			long score = sc.nextLong();
+			sc.close();
+			File file = new File(Constants.SOLUTIONS_DIR + "/score" + score + ".txt");
+			System.out.println("Reading solution from " + file.getName());
+			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+				best = new WeekSchema(br);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
-
-		startSolution.addClosest();
-		startSolution.doOpts();
-
-		WeekSchema best = startSolution;
-		if (Main.IN_THREADS) {
-			best = improveAsync(startSolution);
-		} else {
-			best = improveSync(startSolution);
+		if (best == null) {
+			WeekSchema startSolution = new WeekSchema();
+			startSolution.addClosest();
+			startSolution.doOpts();
+			best = startSolution;
+			if (Main.IN_THREADS) {
+				best = improveAsync(startSolution);
+			} else {
+				best = improveSync(startSolution);
+			}
+			best.removeBadOrders();
 		}
-		best.removeBadOrders();
 
 		System.out.println("Before: " + best.getScore());
 		best.doRandomSwaps((int) 1e7);
+		for (int i = 0; i < 5; i++) {
+			best.removeBadOrders();
+			// best.addGreedilyRandom();
+			best.doOpts();
+			best.doRandomSwaps((int) 1e6);
+		}
 		System.out.println("After: " + best.getScore());
 
 		showSolution(best);

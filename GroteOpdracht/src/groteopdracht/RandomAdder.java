@@ -16,8 +16,7 @@ public class RandomAdder extends Thread {
 		// this.best = new WeekSchema(startSolution);
 	}
 	
-	private static WeekSchema WeekSchemaandom(WeekSchema solution) {
-		WeekSchema cur = new WeekSchema(solution);
+	private static WeekSchema optimiseRandom(WeekSchema cur) {
 		cur.addGreedilyRandom();
 		cur.doOpts();
 		cur.removeBadOrders();
@@ -27,7 +26,7 @@ public class RandomAdder extends Thread {
 	
 	public static WeekSchema iterate(WeekSchema solution, int n) {
 		while (n-- > 0) {
-			WeekSchema cur = WeekSchemaandom(solution);
+			WeekSchema cur = optimiseRandom(new WeekSchema(solution));
 			if (cur.compareTo(best) < 0) best = cur;
 		}
 		return best;
@@ -35,11 +34,13 @@ public class RandomAdder extends Thread {
 	
 	@Override
 	public void run() {
+		int k = 0;
 		while (!this.isInterrupted()) {
-			WeekSchema cur = WeekSchemaandom(startSolution);
+			if (--k < 0) k = 119;
+			WeekSchema cur = optimiseRandom(new WeekSchema(startSolution, k));
 			if (cur.compareTo(best) < 0) {
 				best = cur;
-				System.out.println("Solution found with score: " + best.getScore());
+				System.out.println("Solution found with score: " + best.getScore() + " at k = " + k);
 			}
 		}
 	}

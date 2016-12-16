@@ -46,12 +46,7 @@ public class Constants {
 						if (l == k || l == j || l == i) continue;
 						for (int m = 0; m < 5; m++) {
 							if (m == l || m == k || m == j || m == i) continue;
-							fivePerms[idx][0] = i;
-							fivePerms[idx][1] = j;
-							fivePerms[idx][2] = k;
-							fivePerms[idx][3] = l;
-							fivePerms[idx][4] = m;
-							idx++;
+							fivePerms[idx++] = new int[] { i, j, k, l, m };
 						}
 					}
 				}

@@ -45,8 +45,14 @@ public class WeekSchema implements Comparable<WeekSchema> {
 		this.isCollected = (BitSet) copy.isCollected.clone();
 	}
 
-	public WeekSchema(WeekSchema copy, int permutationIndex) {
-		this(copy);
+	public WeekSchema(WeekSchema copy, int perm) {
+		for (int i = 0; i < 5; i++) {
+			this.weekschema[i] = new DagSchema(copy.weekschema[Constants.fivePerms[perm][i]]);
+		}
+		this.penalty = copy.penalty;
+		this.travelTime = copy.travelTime;
+		this.usedOrders = copy.usedOrders;
+		this.isCollected = (BitSet) copy.isCollected.clone();
 	}
 
 	public WeekSchema(BufferedReader br) throws IOException {
