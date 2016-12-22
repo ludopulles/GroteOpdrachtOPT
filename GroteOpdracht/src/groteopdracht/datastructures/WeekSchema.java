@@ -402,7 +402,138 @@ public class WeekSchema implements Comparable<WeekSchema> {
 			}
 		}
 	}
+	
+	public WeekSchema simAnnealSwap(double startT, double alpha, int maxIterations) {
+		/*
+		 * Ongeveer 8 keer de buurtruimte, we swappen twee orders, dit kan op 1150^2 manieren,
+		 * maar dan tellen we dubbel, dus delen door 2.
+		 */
+		int Q = 4 * 1150 * 1150;
+		double T = startT;
+		
+		WeekSchema best = this;
+		WeekSchema current = this;
+		boolean once = true;
+		boolean stop = false;
+		int iterations = 1;
+		
+		int totalBads = 0;
+		int badAccepts = 0;
+		
+		while(!stop) {			
+			// copy our object
+			WeekSchema newSol = new WeekSchema(current);
+			// do a random swap
+			while(!newSol.randomSimSwap());
+			double newSolScore = newSol.getScore();
+			//newSol.doOpts();
+			
+			double curScore = current.getScore();
+			if (newSolScore <= curScore) {
+				//System.out.println("Accepted improvement!");
+				//System.out.println(newSolScore + " vs " + curScore + " BEST: " + best.getScore());
+				current = newSol;
+			} else {
+				totalBads++;
+				if (accept(curScore, newSolScore, T)) {//accept it
+				//System.out.println("Accepted worse solution with chance " + Math.exp((curScore - newSolScore)/T));
+				//System.out.println(newSolScore + " vs " + curScore + " BEST: " + best.getScore());
+					if(once) {
+						newSol.storeSafely();
+						System.out.println("Saved " + newSol.getScore());
+						once = false;
+					}
+					current = newSol;
+					badAccepts++;
+				} 
+			}
+			if (current.getScore() <= best.getScore()) { //update the overall best if needed
+				best = current;
+			}
+			if (iterations % 1000 == 0) {
+				System.err.println(iterations);
+			}
+			if (iterations > maxIterations) {
+				stop = true;
+			}
+			if ((iterations++) % Q == 0) {
+				T *= alpha;
+				double badsPercent = (1.0 * badAccepts) / totalBads;
+				System.err.println("Accepted " + badsPercent*100 + "% bad neighbors");
+				stop = true;
+				if (badsPercent <= 0.02) {
+					stop = true;
+				}
+				badAccepts = 0;
+				totalBads = 0;
+			}
+		}
+		return best;
+		
+	}
+	
+	private boolean randomSimSwap() {
+		int day1 = RAND.nextInt(5);
+		int day2 = RAND.nextInt(5);
+		int v1 = RAND.nextInt(2);
+		int v2 = RAND.nextInt(2);
+		Route r1 = this.weekschema[day1].getRandomRoute(v1, RAND);
+		Route r2 = this.weekschema[day2].getRandomRoute(v2, RAND);
+		
+		int orderIdx1 = RAND.nextInt(r1.length());
+		int order1 = r1.get(orderIdx1);
+		int lorder1 = (orderIdx1 == 0) ? 0 : r1.get(orderIdx1 - 1);
+		int rorder1 = (orderIdx1 == r1.length() - 1) ? 0
+				: r1.get(orderIdx1 + 1);
+		
+		int orderIdx2 = RAND.nextInt(r2.length());
+		int order2 = r2.get(orderIdx2);
+		int lorder2 = (orderIdx2 == 0) ? 0 : r2.get(orderIdx2 - 1);
+		int rorder2 = (orderIdx2 == r2.length() - 1) ? 0
+				: r2.get(orderIdx2 + 1);
+		
+		if (r1 == r2) {
+			return false;
+		}
+		// for now, consider only frequency 1 orders for swap.
+		if (Order.orders[order1].frequency != 1
+				|| Order.orders[order2].frequency != 1) {
+			return false;
+		}
+		// Check if we have capacity
+		if (!r1.canSet(orderIdx1, order2) || !r2.canSet(orderIdx2, order1)) {
+			return false;
+		}
+		// old distances.
+		int oldRoute1 = dist(lorder1, order1) + dist(order1, rorder1)
+				+ Order.orders[order1].emptyTime;
+		int oldRoute2 = dist(lorder2, order2) + dist(order2, rorder2)
+				+ Order.orders[order2].emptyTime;
+		int newRoute1 = dist(lorder1, order2) + dist(order2, rorder1)
+				+ Order.orders[order2].emptyTime;
+		int newRoute2 = dist(lorder2, order1) + dist(order1, rorder2)
+				+ Order.orders[order1].emptyTime;
 
+		if (this.weekschema[day1].getTime(v1) - (newRoute1 - oldRoute1) <= 0) {
+			return false;
+		}
+		if (this.weekschema[day2].getTime(v2) - (newRoute2 - oldRoute2) <= 0) {
+			return false;
+		}
+		r1.set(orderIdx1, order2);
+		this.weekschema[day1].addTime(v1, newRoute1 - oldRoute1);
+		r2.set(orderIdx2, order1);
+		this.weekschema[day2].addTime(v2, newRoute2 - oldRoute2);
+		this.travelTime += (newRoute1 - oldRoute1);
+		this.travelTime += (newRoute2 - oldRoute2);
+		return true;
+	}
+	
+	private boolean accept(double x, double y, double T) {
+		double chance = Math.exp((x - y)/T);
+		return WeekSchema.RAND.nextDouble() <= chance;
+	}
+	
 	public void doRandomSwaps(int MAX_ITER) {
 		int iter = 0;
 		while (iter++ < MAX_ITER) { // try 100k random swaps.
@@ -411,12 +542,14 @@ public class WeekSchema implements Comparable<WeekSchema> {
 	}
 
 	public void randomSwap() {
+		
 		int day1 = RAND.nextInt(5);
 		int day2 = RAND.nextInt(5);
 		int v1 = RAND.nextInt(2);
 		int v2 = RAND.nextInt(2);
 		Route r1 = this.weekschema[day1].getRandomRoute(v1, RAND);
 		Route r2 = this.weekschema[day2].getRandomRoute(v2, RAND);
+		
 		if (r1 == r2) {
 			return;
 		}

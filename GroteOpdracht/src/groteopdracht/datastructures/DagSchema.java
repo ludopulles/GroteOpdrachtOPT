@@ -152,7 +152,7 @@ public class DagSchema {
 		else 			t2 += diff;
 		return diff;
 	}
-
+	
 	public void removeTimes(int[] times, int vNr) {
 		for (Route r : (vNr == 0 ? v1 : v2)) {
 			for (int i = 0, N = r.length(); i < N; i++) {
@@ -213,4 +213,5 @@ public class DagSchema {
 		else t2 += diff;
 		return diff;
 	}
+
 }

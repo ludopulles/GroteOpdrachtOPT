@@ -47,24 +47,28 @@ public class Main {
 			best.addClosest();
 			best.doOpts();
 		}
-//		WeekSchema copy = new WeekSchema(best);
-//		if (Main.IN_THREADS) {
-//			best = improveAsync(copy, sc);
-//		} else {
-//			best = improveSync(copy);
-//		}
-//		best.removeBadOrders();
-//		System.out.println("Before: " + best.getScore());
-////		best.doRandomSwaps((int) 1e7);
-//		for (int i = 0; i < 5; i++) {
-//			best.removeBadOrders();
-//			// best.addGreedilyRandom();
-//			best.doOpts();
-//			best.doRandomSwaps((int) 2e6);
-//		}
+		WeekSchema copy = new WeekSchema(best);
+		/*if (Main.IN_THREADS) {
+			best = improveAsync(copy, sc);
+		} else {
+			best = improveSync(copy);
+		}*/
+		best.removeBadOrders();
+		System.out.println("Before: " + best.getScore());
+		best.doRandomSwaps((int) 1e7);
+		for (int i = 0; i < 5; i++) {
+			best.removeBadOrders();
+			best.doOpts();
+			best.addGreedilyRandom();
+			best.doOpts();
+			best.doRandomSwaps((int) 2e6);
+		}
 		System.out.println("After: " + best.getScore());
 
-		best = best.simulatedAnnealing();
+		//best = best.simulatedAnnealing();
+		System.err.println("Starting simanneal");
+		best = best.simAnnealSwap(1.9, 0.95, Integer.MAX_VALUE);
+		System.err.println("Done with simanneal");
 		
 		showSolution(best);
 		best.storeSafely();
