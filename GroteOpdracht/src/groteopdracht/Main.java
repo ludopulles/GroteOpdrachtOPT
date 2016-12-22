@@ -47,31 +47,32 @@ public class Main {
 			best.addClosest();
 			best.doOpts();
 		}
-		WeekSchema copy = new WeekSchema(best);
-		if (Main.IN_THREADS) {
-			best = improveAsync(copy, sc);
-		} else {
-			best = improveSync(copy);
-		}
-		best.removeBadOrders();
-
-		System.out.println("Before: " + best.getScore());
-		best.doRandomSwaps((int) 1e7);
-		for (int i = 0; i < 10; i++) {
-			best.removeBadOrders();
-			// best.addGreedilyRandom();
-			best.doOpts();
-			best.doRandomSwaps((int) 2e6);
-		}
+//		WeekSchema copy = new WeekSchema(best);
+//		if (Main.IN_THREADS) {
+//			best = improveAsync(copy, sc);
+//		} else {
+//			best = improveSync(copy);
+//		}
+//		best.removeBadOrders();
+//		System.out.println("Before: " + best.getScore());
+////		best.doRandomSwaps((int) 1e7);
+//		for (int i = 0; i < 5; i++) {
+//			best.removeBadOrders();
+//			// best.addGreedilyRandom();
+//			best.doOpts();
+//			best.doRandomSwaps((int) 2e6);
+//		}
 		System.out.println("After: " + best.getScore());
 
+		best = best.simulatedAnnealing();
+		
 		showSolution(best);
 		best.storeSafely();
 
 		sc.close();
 		long endTime = System.currentTimeMillis();
 		System.err.println("TIME TAKEN: " + (endTime - startTime) + "ms");
-		System.err.println("USED SEED: we don't know...");
+		System.err.println("USED SEED: " + WeekSchema.SEED);
 	}
 
 	private static WeekSchema improveAsync(WeekSchema startSolution, Scanner sc) {

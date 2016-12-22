@@ -17,10 +17,15 @@ public class Constants {
 	public static final int DUMP_LOCATION = 287;
 	public static final Random RANDOM = new Random(); // pi
 	
-	public static int MAX_TIME = MINUTE_CONVERSION * 12 * 60;
-	public static int MAX_CAPACITY = 20000 * 5;
+	public static final int MAX_TIME = MINUTE_CONVERSION * 12 * 60;
+	public static final int MAX_CAPACITY = 20000 * 5;
 	
-	public static int[][] fivePerms = new int[120][5];
+	public static final int[][] fivePerms = new int[120][5];
+	
+	public static final double startT = 7.34375;
+//	public static final double stopT = 1e-3;
+	public static final double alpha = 0.99;
+	public static final int Q = 8 * ORDER_IDS;
 	
 //	public static int CURRENT_MAX_TIME = MAX_TIME;
 //	public static int CURRENT_MAX_CAPACITY = MAX_CAPACITY;

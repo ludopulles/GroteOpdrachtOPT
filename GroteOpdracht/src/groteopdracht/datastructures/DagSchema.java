@@ -10,8 +10,8 @@ import groteopdracht.Constants;
 
 public class DagSchema {
 
-	private ArrayList<Route> v1, v2;
-	private int t1, t2;
+	public ArrayList<Route> v1, v2;
+	public int t1, t2;
 
 	public DagSchema() {
 		v1 = new ArrayList<>();
@@ -191,5 +191,26 @@ public class DagSchema {
 	public Route getRandomRoute(int wagen, Random rand) {
 		ArrayList<Route> routes = (wagen == 0) ? v1 : v2;
 		return routes.get(rand.nextInt(routes.size()));
+	}
+
+	public int removeOrder(int vNr, int order) {
+		int diff = 0;
+		Iterator<Route> it = (vNr == 0 ? v1 : v2).iterator();
+		while (it.hasNext()) {
+			Route r = it.next();
+			for (int idx = 0; idx < r.length(); idx++) {
+				if (r.route.get(idx) == order) {
+					diff += r.removeOrderAt(idx);
+					idx--;
+				}
+			}
+			if (r.length() == 0) {
+				diff += r.time;
+				it.remove();
+			}
+		}
+		if (vNr == 0) t1 += diff;
+		else t2 += diff;
+		return diff;
 	}
 }
