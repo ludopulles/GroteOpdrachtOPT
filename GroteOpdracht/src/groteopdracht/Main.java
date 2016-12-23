@@ -92,6 +92,8 @@ public class Main {
 		System.out.println("Finished; score: " + best.getScore());
 		showSolution(best);
 		best.storeSafely();
+		
+		System.err.println("VALID: " + best.checkScore(true));
 
 		sc.close();
 		long endTime = System.currentTimeMillis();
@@ -104,7 +106,7 @@ public class Main {
 		Thread[] adders = new Thread[nThreads];
 		for (int i = 0; i < nThreads; i++) {
 			// adders[i] = new RandomAdder(startSolution, !USE_BEST);
-			adders[i] = new RandomShuffler(startSolution);
+			adders[i] = i < 2 ? new RandomAdder(startSolution, !USE_BEST) : new RandomShuffler(startSolution);
 			adders[i].start();
 		}
 		final boolean waitForStop = true;
@@ -116,7 +118,6 @@ public class Main {
 					break;
 				if ("best".equalsIgnoreCase(line)) {
 					double min = RandomAdder.best.getScore();
-					min = Math.min(RandomShuffler.best.getScore(), min);
 					System.out.println("Current best score: " + min);
 				}
 			}
@@ -139,9 +140,7 @@ public class Main {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		WeekSchema best = RandomAdder.best;
-		if (best.compareTo(RandomShuffler.best) > 0) best = RandomShuffler.best;
-		return best;
+		return RandomAdder.best;
 	}
 
 	private static WeekSchema improveSync(WeekSchema startSolution) {

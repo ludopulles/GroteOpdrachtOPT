@@ -6,14 +6,15 @@ import groteopdracht.datastructures.WeekSchema;
 
 public class RandomShuffler extends Thread {
 
-	public static volatile WeekSchema best = new WeekSchema();
 	private Random r;
 	private WeekSchema startSolution;
 	
 	public RandomShuffler(WeekSchema startSolution) {
 		this.startSolution = startSolution;
 		this.r = new Random();
-		if (best.compareTo(startSolution) > 0) best = startSolution;
+		if (RandomAdder.best.compareTo(startSolution) > 0) {
+			RandomAdder.best = startSolution;
+		}
 	}
 	
 	@Override
@@ -32,9 +33,9 @@ public class RandomShuffler extends Thread {
 			int n = 1000;
 			while (n-- > 0 && !this.isInterrupted()) {
 				WeekSchema cur = RandomAdder.optimiseRandom(new WeekSchema(start));
-				if (cur.compareTo(best) < 0) {
-					best = cur;
-					System.out.println("Solution found with score: " + best.getScore());
+				if (cur.compareTo(RandomAdder.best) < 0) {
+					RandomAdder.best = cur;
+					System.out.println("Solution found with score: " + RandomAdder.best.getScore());
 				}
 			}
 		}

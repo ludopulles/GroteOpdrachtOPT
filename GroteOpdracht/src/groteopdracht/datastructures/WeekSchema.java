@@ -224,7 +224,7 @@ public class WeekSchema implements Comparable<WeekSchema> {
 		this.travelTime -= diff;
 	}
 
-	private boolean checkScore(boolean print) {
+	public boolean checkScore(boolean print) {
 		int _travelTime = 0, _penalty = 0;
 		BitSet collected = new BitSet(Constants.ORDER_IDS);
 		for (int day = 0; day < 5; day++) {
