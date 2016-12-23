@@ -12,7 +12,7 @@ import groteopdracht.datastructures.WeekSchema;
 
 public class Main {
 
-	private static final boolean IN_THREADS = true;
+	private static final boolean IN_THREADS = false;
 	private static final boolean USE_BEST = true;
 
 	public static void infoMsg(String s) {
@@ -47,28 +47,35 @@ public class Main {
 			best.addClosest();
 			best.doOpts();
 		}
-		WeekSchema copy = new WeekSchema(best);
-		/*if (Main.IN_THREADS) {
-			best = improveAsync(copy, sc);
+
+		if (Main.IN_THREADS) {
+			best = improveAsync(best, sc);
 		} else {
-			best = improveSync(copy);
-		}*/
-		best.removeBadOrders();
+			best = improveSync(best);
+		}
+
 		System.out.println("Before: " + best.getScore());
-		best.doRandomSwaps((int) 1e7);
 		for (int i = 0; i < 5; i++) {
 			best.removeBadOrders();
 			best.doOpts();
-			best.addGreedilyRandom();
-			best.doOpts();
-			best.doRandomSwaps((int) 2e6);
+//			best.addGreedilyRandom();
+//			best.doOpts();
+			best.doRandomSwaps((int) 1e6);
 		}
 		System.out.println("After: " + best.getScore());
 
 		//best = best.simulatedAnnealing();
 		System.err.println("Starting simanneal");
-		best = best.simAnnealSwap(1.9, 0.95, Integer.MAX_VALUE);
+		best = best.simAnnealSwap(3.0, 0.95, (int) 1e6);
 		System.err.println("Done with simanneal");
+		
+		for (int i = 0; i < 10000; i++) {
+			WeekSchema alt = new WeekSchema(best);
+			if (alt.randomSimSwap() && alt.getScore() < best.getScore()) {
+				System.err.println("BETTER: " + alt.getScore() + " vs " + best.getScore());
+				best = alt;
+			}
+		}
 		
 		showSolution(best);
 		best.storeSafely();
@@ -83,17 +90,17 @@ public class Main {
 		final int nThreads = 4;
 		RandomAdder[] adders = new RandomAdder[nThreads];
 		for (int i = 0; i < nThreads; i++) {
-			adders[i] = new RandomAdder(startSolution);
+			adders[i] = new RandomAdder(startSolution, !USE_BEST);
 			adders[i].start();
 		}
 		while (true) {
-			System.out.println("? ");
+			System.out.println("> Type stop, or best");
 			String line = sc.nextLine();
 			if ("stop".equalsIgnoreCase(line))
 				break;
 			if ("best".equalsIgnoreCase(line)) {
 				double min = RandomAdder.getBest().getScore();
-				System.out.println("BEST SCORE: " + min);
+				System.out.println("Current best score: " + min);
 			}
 		}
 
@@ -111,6 +118,6 @@ public class Main {
 	}
 
 	private static WeekSchema improveSync(WeekSchema startSolution) {
-		return RandomAdder.iterate(startSolution, 100);
+		return RandomAdder.iterate(startSolution, 10000);
 	}
 }

@@ -2,6 +2,7 @@ package checker.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Panel;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 

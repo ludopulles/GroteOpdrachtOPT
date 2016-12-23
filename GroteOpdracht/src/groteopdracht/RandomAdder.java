@@ -6,14 +6,15 @@ public class RandomAdder extends Thread {
 	
 	private static volatile WeekSchema best = new WeekSchema();
 	private WeekSchema startSolution;
+	private boolean tryPermutations;
 
 	public static WeekSchema getBest() {
 		return best;
 	}
 	
-	public RandomAdder(WeekSchema solution) {
+	public RandomAdder(WeekSchema solution, boolean tryPermutations) {
 		this.startSolution = solution;
-		// this.best = new WeekSchema(startSolution);
+		this.tryPermutations = tryPermutations;
 	}
 	
 	private static WeekSchema optimiseRandom(WeekSchema cur) {
@@ -36,7 +37,7 @@ public class RandomAdder extends Thread {
 	public void run() {
 		int k = 0;
 		while (!this.isInterrupted()) {
-			if (--k < 0) k = 119;
+			if (this.tryPermutations && --k < 0) k = 119;
 			WeekSchema cur = optimiseRandom(new WeekSchema(startSolution, k));
 			if (cur.compareTo(best) < 0) {
 				best = cur;

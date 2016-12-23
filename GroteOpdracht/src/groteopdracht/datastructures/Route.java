@@ -2,6 +2,7 @@
 package groteopdracht.datastructures;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.ListIterator;
 // import java.util.Random;
 
@@ -47,25 +48,25 @@ public class Route {
 	}
 	
 	public boolean canSet(int idx, int order) {
-		int currentcap = Order.orders[this.route.get(idx)].capacity;
+		int curcap = Order.orders[this.route.get(idx)].capacity;
 		int newcap = Order.orders[order].capacity;
-		int delta = newcap - currentcap;
+		int delta = newcap - curcap;
 		return delta <= this.capLeft;
 	}
 	
-	public void set(int index, int order) {
+	public void set(int index, int newOrder) {
+		int oldOrder = route.get(index);
 		int prev = (index == 0) ? 0 : route.get(index - 1);
 		int next = (index == this.route.size() - 1) ? 0 : route.get(index + 1);
 		
-		int old_time = dist(prev, route.get(index)) + dist(route.get(index), next) + Order.orders[route.get(index)].emptyTime;;
-		int new_time = dist(prev, order) + dist(order, next) + Order.orders[order].emptyTime;
-		this.time += new_time;
-		this.time -= old_time;
+		int oldTime = dist(prev, oldOrder) + dist(oldOrder, next) + Order.orders[oldOrder].emptyTime;
+		int newTime = dist(prev, newOrder) + dist(newOrder, next) + Order.orders[newOrder].emptyTime;
+		this.time += newTime - oldTime;
 
-		this.capLeft += Order.orders[route.get(index)].capacity;
-		this.capLeft -= Order.orders[order].capacity;
+		this.capLeft += Order.orders[oldOrder].capacity;
+		this.capLeft -= Order.orders[newOrder].capacity;
 		
-		this.route.set(index, order);
+		this.route.set(index, newOrder);
 	}
 	
 	public void append(int order) {
@@ -82,7 +83,32 @@ public class Route {
 		this.route.add(index, order);
 	}
 
-	private int dist(int o1, int o2) {
+	public int removeAt(int idx) {
+		int l = idx == 0 ? 0 : route.get(idx - 1);
+		int r = idx == route.size() - 1 ? 0 : route.get(idx + 1);
+		int diff = Order.orders[route.get(idx)].timeIncrease(l, r);
+		this.time -= diff;
+		this.capLeft += Order.orders[route.get(idx)].capacity;
+		this.route.remove(idx);
+		return diff;
+	}
+	
+	public void checkOrders(BitSet orders) {
+		for (int cur : this.route) {
+			orders.set(cur);
+		}
+	}
+	
+	public int checkTime() {
+		int t = Constants.DROP_TIME, lst = 0;
+		for (int cur : this.route) {
+			t += dist(lst, cur) + Order.orders[cur].emptyTime;
+			lst = cur;
+		}
+		return t + dist(lst, 0);
+	}
+
+	private static int dist(int o1, int o2) {
 		return Afstanden.tijd[Order.orders[o1].matrixID][Order.orders[o2].matrixID];
 	}
 
@@ -91,11 +117,10 @@ public class Route {
 		boolean improved = true;
 		while (improved) {
 			improved = false;
-			outer: for (int i = 0; i < N; i++) {
+			for (int i = 0; i < N; i++) {
 				for (int j = i; ++j < N;) {
 					if (twoOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 			}
@@ -116,17 +141,15 @@ public class Route {
 		boolean improved = true;
 		while (improved) {
 			improved = false;
-			outer: for (int i = 0; i < N; i++) {
+			for (int i = 0; i < N; i++) {
 				for (int j = 0; j + 1 < i; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 				for (int j = i + 1; j < N; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 			}
@@ -138,26 +161,22 @@ public class Route {
 		int N = this.length();
 		boolean improved = true;
 		
-//		int k = 0;
 		while (improved) {
 			improved = false;
-			outer: for (int i = 0; i < N; i++) {
+			for (int i = 0; i < N; i++) {
 				for (int j = 0; j + 1 < i; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 				for (int j = i + 1; j < N; j++) {
 					if (twoHalfOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 				for (int j = i; ++j < N; j++) {
 					if (twoOpt(i, j)) {
 						improved = true;
-//						break outer;
 					}
 				}
 			}
@@ -229,15 +248,5 @@ public class Route {
 		}
 		this.time += nxttime - curtime; // < 0.
 		return true;
-	}
-
-	public int removeOrderAt(int idx) {
-		int l = idx == 0 ? 0 : route.get(idx - 1);
-		int r = idx == route.size() - 1 ? 0 : route.get(idx + 1);
-		int diff = Order.orders[route.get(idx)].timeIncrease(l, r);
-		this.time -= diff;
-		this.capLeft += Order.orders[route.get(idx)].capacity;
-		this.route.remove(idx);
-		return diff;
 	}
 }

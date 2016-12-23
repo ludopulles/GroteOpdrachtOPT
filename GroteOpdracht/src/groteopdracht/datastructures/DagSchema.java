@@ -2,6 +2,7 @@
 package groteopdracht.datastructures;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -26,24 +27,41 @@ public class DagSchema {
 		this.t1 = copy.t1;
 		this.t2 = copy.t2;
 	}
-
-	public int getTime(int vNr) {
-		return vNr == 0 ? t1 : t2;
+	
+	public ArrayList<Route> getRoute(int truck) {
+		return truck == 0 ? v1 : v2;
 	}
 
-	public void addTime(int vNr, int time) {
-		if (vNr == 0) {
+	public int getTime(int truck) {
+		return truck == 0 ? t1 : t2;
+	}
+
+	public void addTime(int truck, int time) {
+		if (truck == 0) {
 			t1 -= time;
 		} else {
 			t2 -= time;
 		}
 	}
 	
+	public void checkOrders(BitSet orders) {
+		for (Route r : v1) r.checkOrders(orders);
+		for (Route r : v2) r.checkOrders(orders);
+	}
+	
+	public int checkTime(int truck) {
+		int t = 0;
+		for (Route r : getRoute(truck)) {
+			t += r.checkTime();
+		}
+		return t;
+	}
+	
 	public InsertIndex bestInsertIndex(int order) {
 		InsertIndex bestIndex = new InsertIndex();
 		Order cur = Order.orders[order];
 		for (int i = 0; i < 2; i++) {
-			ArrayList<Route> array = i == 0 ? v1 : v2;
+			ArrayList<Route> array = getRoute(i);
 			int timeLeft = i == 0 ? t1 : t2;
 			for (int j = 0; j < array.size(); j++) {
 				Route r = array.get(j);
@@ -66,13 +84,13 @@ public class DagSchema {
 		return bestIndex;
 	}
 
-	public boolean canAddRoute(int vNr, Route r) {
-		int t = vNr == 0 ? t1 : t2;
+	public boolean canAddRoute(int truck, Route r) {
+		int t = truck == 0 ? t1 : t2;
 		return r.time <= t;
 	}
 
-	public void addRoute(int vNr, Route r) {
-		if (vNr == 0) {
+	public void addRoute(int truck, Route r) {
+		if (truck == 0) {
 			v1.add(r);
 			t1 -= r.time;
 		} else {
@@ -88,27 +106,27 @@ public class DagSchema {
 		if (index.newRoute) {
 			Route r = new Route();
 			r.add(0, order);
-			(index.vNr == 0 ? v1 : v2).add(r);
+			getRoute(index.vNr).add(r);
 		} else {
-			(index.vNr == 0 ? v1 : v2).get(index.routeNr).add(index.routeIndex,
+			getRoute(index.vNr).get(index.routeNr).add(index.routeIndex,
 					order);
 		}
 		if (index.vNr == 0) t1 -= index.timeInc;
 		else t2 -= index.timeInc;
 	}
 
-	public List<Integer> getIds(int vNr) {
+	public List<Integer> getIds(int truck) {
 		ArrayList<Integer> ret = new ArrayList<>();
-		for (Route r : (vNr == 0 ? v1 : v2)) {
+		for (Route r : getRoute(truck)) {
 			ret.addAll(r.route);
 			ret.add(0);
 		}
 		return ret;
 	}
 	
-	public List<Integer> getOrderIds(int vNr) {
+	public List<Integer> getOrderIds(int truck) {
 		ArrayList<Integer> ret = new ArrayList<>();
-		for (Route r : (vNr == 0 ? v1 : v2)) {
+		for (Route r : getRoute(truck)) {
 			for (int id : r.route) {
 				ret.add(Order.orders[id].orderID);
 			}
@@ -117,44 +135,44 @@ public class DagSchema {
 		return ret;
 	}
 
-	public int twoOpt(int vNr) {
+	public int twoOpt(int truck) {
 		int diff = 0;
-		for (Route r : vNr == 0 ? v1 : v2) {
+		for (Route r : getRoute(truck)) {
 			diff -= r.time;
 			r.twoOpt();
 			diff += r.time;
 		}
-		if (vNr == 0) 	t1 += diff;
+		if (truck == 0) t1 += diff;
 		else 			t2 += diff;
 		return diff;
 	}
 
-	public int twoHalfOpt(int vNr) {
+	public int twoHalfOpt(int truck) {
 		int diff = 0;
-		for (Route r : vNr == 0 ? v1 : v2) {
+		for (Route r : getRoute(truck)) {
 			diff -= r.time;
 			r.twoHalfOpt();
 			diff += r.time;
 		}
-		if (vNr == 0) 	t1 += diff;
+		if (truck == 0) t1 += diff;
 		else 			t2 += diff;
 		return diff;
 	}
 	
-	public int opts(int vNr) {
+	public int opts(int truck) {
 		int diff = 0;
-		for (Route r : vNr == 0 ? v1 : v2) {
+		for (Route r : getRoute(truck)) {
 			diff -= r.time;
 			r.opts();
 			diff += r.time;
 		}
-		if (vNr == 0) 	t1 += diff;
+		if (truck == 0) t1 += diff;
 		else 			t2 += diff;
 		return diff;
 	}
 	
-	public void removeTimes(int[] times, int vNr) {
-		for (Route r : (vNr == 0 ? v1 : v2)) {
+	public void removeTimes(int[] times, int truck) {
+		for (Route r : getRoute(truck)) {
 			for (int i = 0, N = r.length(); i < N; i++) {
 				int lorder = i == 0 ? 0 : r.route.get(i - 1);
 				int rorder = i == N - 1 ? 0 : r.route.get(i + 1);
@@ -165,16 +183,14 @@ public class DagSchema {
 		}
 	}
 
-	public int removeAllNegatives(int[] times, int vNr) {
+	public int removeAllNegatives(int[] times, int truck) {
 		int diff = 0;
-		// ArrayList<Route> v = vNr == 0 ? v1 : v2;
-		Iterator<Route> it = (vNr == 0 ? v1 : v2).iterator();
-		// for (Route r : v) {
+		Iterator<Route> it = getRoute(truck).iterator();
 		while (it.hasNext()) {
 			Route r = it.next();
 			for (int idx = 0; idx < r.length(); idx++) {
 				if (times[r.route.get(idx)] < 0) {
-					diff += r.removeOrderAt(idx);
+					diff += r.removeAt(idx);
 					idx--;
 				}
 			}
@@ -183,24 +199,24 @@ public class DagSchema {
 				it.remove();
 			}
 		}
-		if (vNr == 0) t1 += diff;
+		if (truck == 0) t1 += diff;
 		else t2 += diff;
 		return diff;
 	}
 
-	public Route getRandomRoute(int wagen, Random rand) {
-		ArrayList<Route> routes = (wagen == 0) ? v1 : v2;
+	public Route getRandomRoute(int truck, Random rand) {
+		ArrayList<Route> routes = getRoute(truck);
 		return routes.get(rand.nextInt(routes.size()));
 	}
 
-	public int removeOrder(int vNr, int order) {
+	public int removeOrder(int truck, int order) {
 		int diff = 0;
-		Iterator<Route> it = (vNr == 0 ? v1 : v2).iterator();
+		Iterator<Route> it = getRoute(truck).iterator();
 		while (it.hasNext()) {
 			Route r = it.next();
 			for (int idx = 0; idx < r.length(); idx++) {
 				if (r.route.get(idx) == order) {
-					diff += r.removeOrderAt(idx);
+					diff += r.removeAt(idx);
 					idx--;
 				}
 			}
@@ -209,7 +225,7 @@ public class DagSchema {
 				it.remove();
 			}
 		}
-		if (vNr == 0) t1 += diff;
+		if (truck == 0) t1 += diff;
 		else t2 += diff;
 		return diff;
 	}
