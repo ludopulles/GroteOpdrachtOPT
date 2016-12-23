@@ -27,9 +27,8 @@ public class Route {
 	}
 
 	public Route(Route copy) {
-		this.route = new ArrayList<>();
-		for (int i : copy.route)
-			this.route.add(i);
+		this.route = new ArrayList<>(copy.route);
+//		for (int i : copy.route) this.route.add(i);
 
 		this.capLeft = copy.capLeft;
 		this.time = copy.time;

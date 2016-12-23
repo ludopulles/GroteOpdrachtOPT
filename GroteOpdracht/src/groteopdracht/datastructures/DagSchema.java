@@ -11,24 +11,27 @@ import groteopdracht.Constants;
 
 public class DagSchema {
 
-	public ArrayList<Route> v1, v2;
+	public List<Route> v1, v2;
 	public int t1, t2;
 
 	public DagSchema() {
-		v1 = new ArrayList<>();
-		v2 = new ArrayList<>();
-		t1 = t2 = Constants.MAX_TIME;
+		this(new ArrayList<>(), new ArrayList<>(), Constants.MAX_TIME, Constants.MAX_TIME);
 	}
 	
 	public DagSchema(DagSchema copy) {
-		this();
-		for (Route r : copy.v1) v1.add(new Route(r));
-		for (Route r : copy.v2) v2.add(new Route(r));
-		this.t1 = copy.t1;
-		this.t2 = copy.t2;
+		this(copy.v1, copy.v2, copy.t1, copy.t2);
 	}
 	
-	public ArrayList<Route> getRoute(int truck) {
+	public DagSchema(List<Route> v1, List<Route> v2, int t1, int t2) {
+		this.v1 = new ArrayList<>();
+		this.v2 = new ArrayList<>();
+		for (Route r : v1) this.v1.add(new Route(r));
+		for (Route r : v2) this.v2.add(new Route(r));
+		this.t1 = t1;
+		this.t2 = t2;
+	}
+	
+	public List<Route> getRoute(int truck) {
 		return truck == 0 ? v1 : v2;
 	}
 
@@ -61,7 +64,7 @@ public class DagSchema {
 		InsertIndex bestIndex = new InsertIndex();
 		Order cur = Order.orders[order];
 		for (int i = 0; i < 2; i++) {
-			ArrayList<Route> array = getRoute(i);
+			List<Route> array = getRoute(i);
 			int timeLeft = i == 0 ? t1 : t2;
 			for (int j = 0; j < array.size(); j++) {
 				Route r = array.get(j);
@@ -205,8 +208,12 @@ public class DagSchema {
 	}
 
 	public Route getRandomRoute(int truck, Random rand) {
-		ArrayList<Route> routes = getRoute(truck);
+		List<Route> routes = getRoute(truck);
 		return routes.get(rand.nextInt(routes.size()));
+	}
+
+	public boolean routesEmpty(int truck) {
+		return getRoute(truck).isEmpty();
 	}
 
 	public int removeOrder(int truck, int order) {

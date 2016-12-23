@@ -4,20 +4,17 @@ import groteopdracht.datastructures.WeekSchema;
 
 public class RandomAdder extends Thread {
 	
-	private static volatile WeekSchema best = new WeekSchema();
+	public static volatile WeekSchema best = new WeekSchema();
 	private WeekSchema startSolution;
 	private boolean tryPermutations;
-
-	public static WeekSchema getBest() {
-		return best;
-	}
 	
-	public RandomAdder(WeekSchema solution, boolean tryPermutations) {
-		this.startSolution = solution;
+	public RandomAdder(WeekSchema startSolution, boolean tryPermutations) {
+		this.startSolution = startSolution;
 		this.tryPermutations = tryPermutations;
+		if (best.compareTo(startSolution) > 0) best = startSolution;
 	}
 	
-	private static WeekSchema optimiseRandom(WeekSchema cur) {
+	public static WeekSchema optimiseRandom(WeekSchema cur) {
 		cur.addGreedilyRandom();
 		cur.doOpts();
 		cur.removeBadOrders();

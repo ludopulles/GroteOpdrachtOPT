@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import checker.ui.App;
@@ -12,7 +13,7 @@ import groteopdracht.datastructures.WeekSchema;
 
 public class Main {
 
-	private static final boolean IN_THREADS = false;
+	private static final boolean IN_THREADS = true;
 	private static final boolean USE_BEST = true;
 
 	public static void infoMsg(String s) {
@@ -33,13 +34,16 @@ public class Main {
 		WeekSchema best = null;
 		if (USE_BEST) {
 			System.out.print("Which file do you want to optimise? ");
-			long score = sc.nextLong();
-			File file = new File(Constants.SOLUTIONS_DIR + "/score" + score + ".txt");
-			System.out.println("Reading solution from " + file.getName());
-			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-				best = new WeekSchema(br);
-			} catch (IOException e) {
-				e.printStackTrace();
+			try {
+				long score = sc.nextLong();
+				File file = new File(Constants.SOLUTIONS_DIR + "/score" + score + ".txt");
+				System.out.println("Reading solution from " + file.getName());
+				try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+					best = new WeekSchema(br);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} catch (InputMismatchException e) {
 			}
 		}
 		if (best == null) {
@@ -54,21 +58,29 @@ public class Main {
 			best = improveSync(best);
 		}
 
-		System.out.println("Before: " + best.getScore());
+		System.out.println("Starting small improvements; score: " + best.getScore());
+		best.addImprovements();
 		for (int i = 0; i < 5; i++) {
 			best.removeBadOrders();
 			best.doOpts();
-//			best.addGreedilyRandom();
-//			best.doOpts();
+			// best.addGreedilyRandom();
+			// best.doOpts();
 			best.doRandomSwaps((int) 1e6);
 		}
-		System.out.println("After: " + best.getScore());
+		System.out.println("Starting simulated annealing; score: " + best.getScore());
 
-		//best = best.simulatedAnnealing();
-		System.err.println("Starting simanneal");
-		best = best.simAnnealSwap(3.0, 0.95, (int) 1e6);
-		System.err.println("Done with simanneal");
-		
+		// best = best.simulatedAnnealing();
+		best = best.simAnnealSwap(1.0, 0.99, (int) 3e5);
+
+		System.out.println("Starting small improvements; score: " + best.getScore());
+		for (int i = 0; i < 5; i++) {
+			// best.addGreedilyRandom();
+			best.removeBadOrders();
+			best.doOpts();
+			best.doRandomSwaps((int) 1e6);
+			best.doOpts();
+		}
+
 		for (int i = 0; i < 10000; i++) {
 			WeekSchema alt = new WeekSchema(best);
 			if (alt.randomSimSwap() && alt.getScore() < best.getScore()) {
@@ -76,7 +88,8 @@ public class Main {
 				best = alt;
 			}
 		}
-		
+
+		System.out.println("Finished; score: " + best.getScore());
 		showSolution(best);
 		best.storeSafely();
 
@@ -88,20 +101,32 @@ public class Main {
 
 	private static WeekSchema improveAsync(WeekSchema startSolution, Scanner sc) {
 		final int nThreads = 4;
-		RandomAdder[] adders = new RandomAdder[nThreads];
+		Thread[] adders = new Thread[nThreads];
 		for (int i = 0; i < nThreads; i++) {
-			adders[i] = new RandomAdder(startSolution, !USE_BEST);
+			// adders[i] = new RandomAdder(startSolution, !USE_BEST);
+			adders[i] = new RandomShuffler(startSolution);
 			adders[i].start();
 		}
-		while (true) {
-			System.out.println("> Type stop, or best");
-			String line = sc.nextLine();
-			if ("stop".equalsIgnoreCase(line))
-				break;
-			if ("best".equalsIgnoreCase(line)) {
-				double min = RandomAdder.getBest().getScore();
-				System.out.println("Current best score: " + min);
+		final boolean waitForStop = true;
+		if (waitForStop) {
+			while (true) {
+				System.out.println("> Type stop, or best");
+				String line = sc.nextLine();
+				if ("stop".equalsIgnoreCase(line))
+					break;
+				if ("best".equalsIgnoreCase(line)) {
+					double min = RandomAdder.best.getScore();
+					min = Math.min(RandomShuffler.best.getScore(), min);
+					System.out.println("Current best score: " + min);
+				}
 			}
+		} else {
+			try {
+				Thread.sleep(2000L);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.err.println("Stop trying...");
 		}
 
 		for (int i = 0; i < nThreads; i++) {
@@ -114,10 +139,12 @@ public class Main {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		return RandomAdder.getBest();
+		WeekSchema best = RandomAdder.best;
+		if (best.compareTo(RandomShuffler.best) > 0) best = RandomShuffler.best;
+		return best;
 	}
 
 	private static WeekSchema improveSync(WeekSchema startSolution) {
-		return RandomAdder.iterate(startSolution, 10000);
+		return RandomAdder.iterate(startSolution, 100);
 	}
 }
